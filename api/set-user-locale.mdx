@@ -1,0 +1,93 @@
+---
+title: "setUserLocale"
+description: "Set the locale for the current user"
+---
+
+Sets the user's locale preference, which determines the language used for in-app messages. The locale is stored in local storage and persists across sessions.
+
+## Method Signature
+
+```javascript
+Gist.setUserLocale(locale)
+```
+
+## Parameters
+
+<ParamField path="locale" type="string" required>
+  The locale code to set (e.g., `"en-US"`, `"es-ES"`, `"fr-FR"`). Follows the BCP 47 language tag format.
+</ParamField>
+
+## Returns
+
+<ResponseField name="void" type="void">
+  This method does not return a value
+</ResponseField>
+
+## Example Usage
+
+```javascript
+// Set locale to Spanish
+Gist.setUserLocale('es-ES');
+```
+
+```javascript
+// Set locale to French
+Gist.setUserLocale('fr-FR');
+```
+
+```javascript
+// Set locale based on user selection
+const languageSelector = document.querySelector('#language-select');
+languageSelector.addEventListener('change', (event) => {
+  const selectedLocale = event.target.value;
+  Gist.setUserLocale(selectedLocale);
+  console.log(`Locale set to: ${selectedLocale}`);
+});
+```
+
+```javascript
+// Set locale based on browser language
+const browserLocale = navigator.language;
+Gist.setUserLocale(browserLocale);
+```
+
+## Common Locale Codes
+
+| Code | Language |
+|------|----------|
+| `en-US` | English (United States) |
+| `en-GB` | English (United Kingdom) |
+| `es-ES` | Spanish (Spain) |
+| `es-MX` | Spanish (Mexico) |
+| `fr-FR` | French (France) |
+| `de-DE` | German (Germany) |
+| `it-IT` | Italian (Italy) |
+| `pt-BR` | Portuguese (Brazil) |
+| `ja-JP` | Japanese (Japan) |
+| `zh-CN` | Chinese (Simplified) |
+| `ko-KR` | Korean (South Korea) |
+
+## Notes
+
+- The locale is stored in local storage and persists across browser sessions
+- If no locale is set, the SDK falls back to `navigator.language`
+- The locale affects which message variants are delivered to the user
+- Changes take effect for new messages delivered after the locale is set
+- The locale follows the BCP 47 language tag standard (language-region format)
+
+## Retrieving the Current Locale
+
+While there is no public `getUserLocale()` method, the SDK internally uses the stored locale or falls back to the browser's language:
+
+```javascript
+// The SDK will use the locale you set
+Gist.setUserLocale('es-ES');
+
+// Or fall back to browser language if not set
+console.log(navigator.language); // e.g., "en-US"
+```
+
+## Related Methods
+
+- [setCustomAttribute](/api/set-custom-attribute) - Set custom user attributes
+- [setUserToken](/api/set-user-token) - Set the user authentication token

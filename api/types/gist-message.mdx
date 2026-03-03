@@ -1,0 +1,129 @@
+---
+title: "GistMessage"
+description: "Message object representing a Gist message to be displayed"
+---
+
+## Interface
+
+```typescript
+interface GistMessage {
+  messageId: string;
+  queueId?: string;
+  instanceId?: string;
+  overlay?: boolean;
+  elementId?: string | null;
+  firstLoad?: boolean;
+  shouldScale?: boolean;
+  shouldResizeHeight?: boolean;
+  renderStartTime?: number;
+  currentRoute?: string;
+  position?: string | null;
+  savedStepName?: string | null;
+  isDisplayChange?: boolean;
+  displaySettings?: DisplaySettings;
+  properties?: MessageProperties;
+}
+```
+
+## Properties
+
+<ResponseField name="messageId" type="string" required>
+  Unique identifier for the message.
+</ResponseField>
+
+<ResponseField name="queueId" type="string">
+  Queue identifier for the message, used for tracking message delivery.
+</ResponseField>
+
+<ResponseField name="instanceId" type="string">
+  Instance identifier for this specific message rendering.
+</ResponseField>
+
+<ResponseField name="overlay" type="boolean">
+  Whether the message should be displayed as an overlay.
+</ResponseField>
+
+<ResponseField name="elementId" type="string | null">
+  DOM element ID where the message should be rendered (for inline messages).
+</ResponseField>
+
+<ResponseField name="firstLoad" type="boolean">
+  Indicates if this is the first time the message is being loaded.
+</ResponseField>
+
+<ResponseField name="shouldScale" type="boolean">
+  Whether the message should scale to fit its container.
+</ResponseField>
+
+<ResponseField name="shouldResizeHeight" type="boolean">
+  Whether the message height should automatically adjust.
+</ResponseField>
+
+<ResponseField name="renderStartTime" type="number">
+  Timestamp when the message rendering started.
+</ResponseField>
+
+<ResponseField name="currentRoute" type="string">
+  The current route/URL where the message is being displayed.
+</ResponseField>
+
+<ResponseField name="position" type="string | null">
+  Position of the message on the screen (e.g., "top", "bottom", "center").
+</ResponseField>
+
+<ResponseField name="savedStepName" type="string | null">
+  Name of the saved step for multi-step messages.
+</ResponseField>
+
+<ResponseField name="isDisplayChange" type="boolean">
+  Indicates if this is a display change event.
+</ResponseField>
+
+<ResponseField name="displaySettings" type="DisplaySettings">
+  <Expandable title="DisplaySettings">
+    <ResponseField name="displayType" type="'modal' | 'overlay' | 'inline' | 'tooltip'">
+      The type of display for the message.
+    </ResponseField>
+    <ResponseField name="modalPosition" type="string">
+      Position of the modal on screen.
+    </ResponseField>
+    <ResponseField name="overlayPosition" type="string">
+      Position of the overlay.
+    </ResponseField>
+    <ResponseField name="elementSelector" type="string">
+      CSS selector for the target element.
+    </ResponseField>
+    <ResponseField name="maxWidth" type="number">
+      Maximum width of the message in pixels.
+    </ResponseField>
+    <ResponseField name="overlayColor" type="string">
+      Background color for the overlay.
+    </ResponseField>
+    <ResponseField name="dismissOutsideClick" type="boolean">
+      Whether clicking outside the message dismisses it.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="properties" type="MessageProperties">
+  <Expandable title="MessageProperties">
+    <ResponseField name="gist" type="GistProperties">
+      Gist-specific properties for the message.
+    </ResponseField>
+    <ResponseField name="[key: string]" type="unknown">
+      Additional custom properties.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Example
+
+```typescript
+import Gist from "@getgist/web";
+
+Gist.events.on("message", (message: GistMessage) => {
+  console.log("Message received:", message.messageId);
+  console.log("Display type:", message.displaySettings?.displayType);
+  console.log("Position:", message.position);
+});
+```

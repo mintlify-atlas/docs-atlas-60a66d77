@@ -1,0 +1,620 @@
+---
+title: Event Handling
+description: Listen to SDK events to track message lifecycle and user interactions
+---
+
+The Gist Web SDK emits events throughout the message lifecycle, allowing you to track when messages are shown, dismissed, interacted with, and more. This guide covers all available events and how to use them.
+
+## Event System
+
+The SDK uses a custom EventEmitter class that provides:
+
+- Event registration with `on()`
+- Event deregistration with `off()`
+- Support for multiple listeners per event
+- Automatic cleanup when all listeners are removed
+
+## Subscribing to Events
+
+Use the `on()` method to listen to events:
+
+```javascript
+_cio.events.on('eventName', (data) => {
+  console.log('Event received:', data);
+});
+```
+
+## Unsubscribing from Events
+
+Remove specific listeners or all listeners for an event:
+
+```javascript
+// Save the callback reference
+const handleEvent = (data) => {
+  console.log('Event:', data);
+};
+
+// Subscribe
+_cio.events.on('eventName', handleEvent);
+
+// Unsubscribe specific listener
+_cio.events.off('eventName', handleEvent);
+
+// Unsubscribe all listeners for an event
+_cio.events.off('eventName');
+```
+
+## Message Lifecycle Events
+
+### messageShown
+
+Fired when a message is successfully displayed to the user.
+
+```javascript
+_cio.events.on('messageShown', (message) => {
+  console.log('Message displayed:', message.messageId);
+  console.log('Instance ID:', message.instanceId);
+  console.log('Queue ID:', message.queueId);
+  console.log('Is overlay:', message.overlay);
+  
+  // Track with your analytics
+  analytics.track('Message Shown', {
+    messageId: message.messageId,
+    type: message.overlay ? 'overlay' : 'embedded'
+  });
+});
+```
+
+**Event Data:**
+
+```typescript
+{
+  messageId: string;      // The message identifier
+  instanceId: string;     // Unique instance identifier
+  queueId?: string;       // Queue identifier
+  overlay: boolean;       // True for overlay, false for embedded
+  elementId?: string;     // Element ID (for embedded messages)
+  properties?: object;    // Message properties
+  currentRoute?: string;  // Current route in the message
+}
+```
+
+### messageDismissed
+
+Fired when a message is dismissed or closed.
+
+```javascript
+_cio.events.on('messageDismissed', (message) => {
+  console.log('Message dismissed:', message.messageId);
+  
+  // Track dismissal
+  analytics.track('Message Dismissed', {
+    messageId: message.messageId,
+    timeOnScreen: calculateTimeOnScreen(message)
+  });
+  
+  // Show next step or cleanup
+  if (message.messageId === 'onboarding-step-1') {
+    showNextOnboardingStep();
+  }
+});
+```
+
+### messageError
+
+Fired when a message fails to load or encounters an error.
+
+```javascript
+_cio.events.on('messageError', (message) => {
+  console.error('Message error:', message.messageId);
+  
+  // Log error to monitoring service
+  errorTracker.log('Message Load Error', {
+    messageId: message.messageId,
+    instanceId: message.instanceId
+  });
+  
+  // Show fallback content
+  showFallbackContent();
+});
+```
+
+### messageAction
+
+Fired when a user interacts with a message (clicks buttons, links, etc.).
+
+```javascript
+_cio.events.on('messageAction', (event) => {
+  console.log('Message action:', event.action);
+  console.log('Button name:', event.name);
+  console.log('Message:', event.message.messageId);
+  
+  // Track interaction
+  analytics.track('Message Action', {
+    messageId: event.message.messageId,
+    action: event.action,
+    buttonName: event.name
+  });
+  
+  // Handle specific actions
+  if (event.action === 'https://example.com/upgrade') {
+    // Custom handling for upgrade action
+    handleUpgradeFlow();
+  }
+});
+```
+
+**Event Data:**
+
+```typescript
+{
+  message: GistMessage;   // The message object
+  action: string;         // The action URL or identifier
+  name: string;           // The button/link name
+}
+```
+
+## Inbox Events
+
+### messageInboxUpdated
+
+Fired when the inbox is updated (messages added, removed, or states changed).
+
+```javascript
+_cio.events.on('messageInboxUpdated', (messages) => {
+  console.log('Inbox updated:', messages.length, 'messages');
+  
+  // Update inbox UI
+  updateInboxDisplay(messages);
+  
+  // Update unread count badge
+  const unreadCount = messages.filter(m => !m.opened).length;
+  updateBadge(unreadCount);
+});
+```
+
+**Event Data:**
+
+```typescript
+InboxMessage[] // Array of inbox messages
+```
+
+### inboxMessageAction
+
+Fired when an inbox message state changes (opened/unopened).
+
+```javascript
+_cio.events.on('inboxMessageAction', (event) => {
+  console.log('Inbox action:', event.action); // 'opened' or 'unopened'
+  console.log('Message:', event.message.messageId);
+  
+  // Update specific message in UI
+  const messageElement = document.querySelector(
+    `[data-queue-id="${event.message.queueId}"]`
+  );
+  
+  if (messageElement) {
+    messageElement.classList.toggle('read', event.action === 'opened');
+  }
+  
+  // Track state change
+  analytics.track('Inbox Message Action', {
+    messageId: event.message.messageId,
+    action: event.action
+  });
+});
+```
+
+**Event Data:**
+
+```typescript
+{
+  message: InboxMessage;  // The inbox message
+  action: 'opened' | 'unopened'; // The action performed
+}
+```
+
+## Custom Events from Messages
+
+### eventDispatched
+
+Messages can dispatch custom events that you can listen to:
+
+```javascript
+_cio.events.on('eventDispatched', (event) => {
+  console.log('Custom event:', event.name);
+  console.log('Payload:', event.payload);
+  
+  // Handle custom events from your messages
+  switch (event.name) {
+    case 'survey_completed':
+      handleSurveyCompletion(event.payload);
+      break;
+    case 'feature_requested':
+      trackFeatureRequest(event.payload);
+      break;
+    case 'feedback_submitted':
+      submitFeedback(event.payload);
+      break;
+  }
+});
+```
+
+**Event Data:**
+
+```typescript
+{
+  name: string;      // Event name
+  payload: unknown;  // Event payload (any data)
+}
+```
+
+## Complete Event Tracking Example
+
+Here's a comprehensive example that tracks all message events:
+
+```javascript
+class MessageEventTracker {
+  constructor() {
+    this.setupEventListeners();
+    this.messageTimestamps = new Map();
+  }
+  
+  setupEventListeners() {
+    // Track when messages are shown
+    _cio.events.on('messageShown', (message) => {
+      this.messageTimestamps.set(message.instanceId, Date.now());
+      
+      this.track('Message Shown', {
+        messageId: message.messageId,
+        instanceId: message.instanceId,
+        type: message.overlay ? 'overlay' : 'embedded',
+        route: message.currentRoute
+      });
+    });
+    
+    // Track when messages are dismissed
+    _cio.events.on('messageDismissed', (message) => {
+      const shownAt = this.messageTimestamps.get(message.instanceId);
+      const timeOnScreen = shownAt ? Date.now() - shownAt : 0;
+      
+      this.track('Message Dismissed', {
+        messageId: message.messageId,
+        instanceId: message.instanceId,
+        timeOnScreenMs: timeOnScreen,
+        route: message.currentRoute
+      });
+      
+      this.messageTimestamps.delete(message.instanceId);
+    });
+    
+    // Track message errors
+    _cio.events.on('messageError', (message) => {
+      this.track('Message Error', {
+        messageId: message.messageId,
+        instanceId: message.instanceId
+      });
+      
+      // Log to error tracking service
+      console.error('Message failed to load:', message);
+    });
+    
+    // Track user interactions
+    _cio.events.on('messageAction', (event) => {
+      this.track('Message Action', {
+        messageId: event.message.messageId,
+        instanceId: event.message.instanceId,
+        action: event.action,
+        buttonName: event.name,
+        route: event.message.currentRoute
+      });
+    });
+    
+    // Track inbox updates
+    _cio.events.on('messageInboxUpdated', (messages) => {
+      const unreadCount = messages.filter(m => !m.opened).length;
+      
+      this.track('Inbox Updated', {
+        totalMessages: messages.length,
+        unreadMessages: unreadCount
+      });
+    });
+    
+    // Track inbox message actions
+    _cio.events.on('inboxMessageAction', (event) => {
+      this.track('Inbox Message Action', {
+        messageId: event.message.messageId,
+        queueId: event.message.queueId,
+        action: event.action
+      });
+    });
+    
+    // Track custom events from messages
+    _cio.events.on('eventDispatched', (event) => {
+      this.track('Custom Event', {
+        eventName: event.name,
+        payload: event.payload
+      });
+    });
+  }
+  
+  track(eventName, properties) {
+    // Send to your analytics service
+    console.log(`[Analytics] ${eventName}`, properties);
+    
+    // Example: Send to Google Analytics
+    if (window.gtag) {
+      gtag('event', eventName, properties);
+    }
+    
+    // Example: Send to Segment
+    if (window.analytics) {
+      analytics.track(eventName, properties);
+    }
+    
+    // Example: Send to custom analytics
+    if (window.customAnalytics) {
+      customAnalytics.track(eventName, properties);
+    }
+  }
+  
+  cleanup() {
+    // Remove all event listeners
+    _cio.events.off('messageShown');
+    _cio.events.off('messageDismissed');
+    _cio.events.off('messageError');
+    _cio.events.off('messageAction');
+    _cio.events.off('messageInboxUpdated');
+    _cio.events.off('inboxMessageAction');
+    _cio.events.off('eventDispatched');
+  }
+}
+
+// Initialize tracker
+const tracker = new MessageEventTracker();
+```
+
+## Conversion Tracking Example
+
+Track message-driven conversions:
+
+```javascript
+// Track which messages lead to conversions
+const messageInteractions = new Map();
+
+// Track message actions
+_cio.events.on('messageAction', (event) => {
+  messageInteractions.set('lastMessage', {
+    messageId: event.message.messageId,
+    action: event.action,
+    timestamp: Date.now()
+  });
+});
+
+// When user converts, attribute to last message
+function trackConversion(conversionType, value) {
+  const lastMessage = messageInteractions.get('lastMessage');
+  
+  if (lastMessage) {
+    const timeSinceMessage = Date.now() - lastMessage.timestamp;
+    
+    // Attribute if conversion happened within 5 minutes
+    if (timeSinceMessage < 5 * 60 * 1000) {
+      analytics.track('Conversion', {
+        type: conversionType,
+        value: value,
+        attributedToMessage: lastMessage.messageId,
+        attributedToAction: lastMessage.action,
+        timeSinceMessageMs: timeSinceMessage
+      });
+    }
+  }
+}
+
+// Example: Track purchase conversion
+function completePurchase(orderTotal) {
+  trackConversion('purchase', orderTotal);
+}
+
+// Example: Track signup conversion
+function completeSignup() {
+  trackConversion('signup', null);
+}
+```
+
+## A/B Testing with Events
+
+Use events to track A/B test performance:
+
+```javascript
+class MessageABTest {
+  constructor() {
+    this.testData = new Map();
+    this.setupTracking();
+  }
+  
+  setupTracking() {
+    // Track impressions
+    _cio.events.on('messageShown', (message) => {
+      const variant = message.properties?.variant || 'control';
+      
+      this.recordImpression(message.messageId, variant);
+    });
+    
+    // Track clicks
+    _cio.events.on('messageAction', (event) => {
+      const variant = event.message.properties?.variant || 'control';
+      
+      this.recordClick(event.message.messageId, variant);
+    });
+  }
+  
+  recordImpression(messageId, variant) {
+    const key = `${messageId}_${variant}`;
+    const data = this.testData.get(key) || { impressions: 0, clicks: 0 };
+    data.impressions++;
+    this.testData.set(key, data);
+    
+    console.log(`Impression: ${messageId} (${variant})`);
+  }
+  
+  recordClick(messageId, variant) {
+    const key = `${messageId}_${variant}`;
+    const data = this.testData.get(key) || { impressions: 0, clicks: 0 };
+    data.clicks++;
+    this.testData.set(key, data);
+    
+    console.log(`Click: ${messageId} (${variant})`);
+  }
+  
+  getResults(messageId) {
+    const results = [];
+    
+    this.testData.forEach((data, key) => {
+      if (key.startsWith(messageId)) {
+        const variant = key.split('_')[1];
+        const ctr = data.impressions > 0 
+          ? (data.clicks / data.impressions * 100).toFixed(2)
+          : 0;
+        
+        results.push({
+          variant,
+          impressions: data.impressions,
+          clicks: data.clicks,
+          ctr: `${ctr}%`
+        });
+      }
+    });
+    
+    return results;
+  }
+}
+
+const abTest = new MessageABTest();
+
+// Later, check results
+console.table(abTest.getResults('welcome-message'));
+```
+
+## Error Handling and Debugging
+
+Use events to debug issues:
+
+```javascript
+// Enable debug logging
+await _cio.setup({
+  siteId: 'your-site-id',
+  dataCenter: 'US',
+  logging: true  // Enable SDK logging
+});
+
+// Track all events for debugging
+const eventLog = [];
+
+function logEvent(eventName, data) {
+  eventLog.push({
+    event: eventName,
+    data: data,
+    timestamp: new Date().toISOString()
+  });
+  console.log(`[Event] ${eventName}`, data);
+}
+
+_cio.events.on('messageShown', (data) => logEvent('messageShown', data));
+_cio.events.on('messageDismissed', (data) => logEvent('messageDismissed', data));
+_cio.events.on('messageError', (data) => logEvent('messageError', data));
+_cio.events.on('messageAction', (data) => logEvent('messageAction', data));
+
+// Export log for debugging
+function exportEventLog() {
+  console.log('Event Log:', JSON.stringify(eventLog, null, 2));
+  return eventLog;
+}
+```
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Clean up event listeners">
+    Remove event listeners when they're no longer needed to prevent memory leaks:
+    
+    ```javascript
+    // Store reference to callback
+    const handleMessageShown = (message) => {
+      console.log('Message shown:', message.messageId);
+    };
+    
+    // Subscribe
+    _cio.events.on('messageShown', handleMessageShown);
+    
+    // Clean up when done (e.g., component unmount)
+    _cio.events.off('messageShown', handleMessageShown);
+    ```
+  </Accordion>
+  
+  <Accordion title="Use events for analytics integration">
+    Events are perfect for integrating with analytics platforms:
+    
+    ```javascript
+    _cio.events.on('messageAction', (event) => {
+      // Google Analytics
+      gtag('event', 'message_action', {
+        message_id: event.message.messageId,
+        action: event.action
+      });
+      
+      // Segment
+      analytics.track('Message Action', {
+        messageId: event.message.messageId,
+        action: event.action
+      });
+    });
+    ```
+  </Accordion>
+  
+  <Accordion title="Don't block the event thread">
+    Keep event handlers fast and non-blocking:
+    
+    ```javascript
+    // ❌ Bad: Synchronous heavy operation
+    _cio.events.on('messageShown', (message) => {
+      heavySyncOperation(); // Blocks other events
+    });
+    
+    // ✅ Good: Async non-blocking
+    _cio.events.on('messageShown', async (message) => {
+      await asyncOperation(); // Non-blocking
+    });
+    ```
+  </Accordion>
+  
+  <Accordion title="Handle errors in event listeners">
+    ```javascript
+    _cio.events.on('messageShown', (message) => {
+      try {
+        // Your event handling code
+        trackMessageShown(message);
+      } catch (error) {
+        console.error('Error handling messageShown event:', error);
+        // Don't let errors break other listeners
+      }
+    });
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Event Reference Table
+
+| Event | When Fired | Data |
+|-------|-----------|------|
+| `messageShown` | Message is displayed | `GistMessage` |
+| `messageDismissed` | Message is closed | `GistMessage` |
+| `messageError` | Message fails to load | `GistMessage` |
+| `messageAction` | User interacts with message | `{ message, action, name }` |
+| `messageInboxUpdated` | Inbox is updated | `InboxMessage[]` |
+| `inboxMessageAction` | Inbox message state changes | `{ message, action }` |
+| `eventDispatched` | Custom event from message | `{ name, payload }` |
+
+<Card title="Next Steps" icon="arrow-right" href="/api-reference/methods">
+  Explore the complete API reference
+</Card>

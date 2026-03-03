@@ -1,0 +1,82 @@
+---
+title: 'showMessage'
+description: 'Display a message as an overlay'
+---
+
+## Method Signature
+
+```javascript
+Gist.showMessage(message: GistMessage): Promise<string | null>
+```
+
+Displays a message as an overlay on top of your application content. Only one overlay message can be shown at a time.
+
+## Parameters
+
+<ParamField path="message" type="GistMessage" required>
+  The message object to display
+  
+  <Expandable title="properties">
+    <ParamField path="messageId" type="string" required>
+      The unique ID of the message to display
+    </ParamField>
+    
+    <ParamField path="queueId" type="string">
+      Optional queue ID for tracking message state
+    </ParamField>
+    
+    <ParamField path="properties" type="object">
+      Additional properties for the message (e.g., custom attributes, display settings)
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+## Returns
+
+<ResponseField name="instanceId" type="string | null">
+  Returns the instance ID of the displayed message, or `null` if the message could not be shown
+</ResponseField>
+
+## Example
+
+```javascript
+import Gist from '@customer.io/gist-web';
+
+// Show a message by ID
+const instanceId = await Gist.showMessage({
+  messageId: 'msg_123'
+});
+
+if (instanceId) {
+  console.log('Message displayed with instance ID:', instanceId);
+} else {
+  console.log('Message could not be displayed');
+}
+
+// Show a message with custom properties
+const instanceId2 = await Gist.showMessage({
+  messageId: 'msg_456',
+  properties: {
+    userName: 'John Doe',
+    accountType: 'premium'
+  }
+});
+```
+
+## Example from Source
+
+```javascript
+static async showMessage(message) {
+  var messageResponse = await showMessage(message);
+  return messageResponse ? messageResponse.instanceId : null;
+}
+```
+
+## Notes
+
+- Only one overlay message can be displayed at a time. If an overlay is already showing, this method returns `null`.
+- Messages are only displayed when the document is visible (not hidden in background tab).
+- The message will automatically log a view event when displayed (unless it's a persistent message).
+- The returned instance ID can be used with [dismissMessage](/api/dismiss-message) or [updateMessageDisplaySettings](/api/update-message-display-settings).
+- If a message with the same `queueId` is already showing, this method returns `null`.
+- The SDK triggers a `messageShown` event when the message is successfully displayed.

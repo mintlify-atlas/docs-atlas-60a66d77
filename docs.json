@@ -1,122 +1,129 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "mint",
-  "name": "Mint Starter Kit",
+  "name": "Gist Web SDK",
+  "theme": "palm",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#5865F2",
+    "light": "#7289DA",
+    "dark": "#404EED"
   },
   "favicon": "/favicon.svg",
+  "navbar": {
+    "primary": {
+      "type": "github",
+      "href": "https://github.com/customerio/gist-web"
+    }
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/customerio/gist-web"
+    }
+  },
   "navigation": {
     "tabs": [
       {
-        "tab": "Guides",
+        "tab": "Documentation",
         "groups": [
           {
-            "group": "Getting started",
+            "group": "Get Started",
             "pages": [
-              "index",
-              "quickstart",
-              "development"
+              "introduction",
+              "installation",
+              "quickstart"
             ]
           },
           {
-            "group": "Customization",
+            "group": "Core Concepts",
             "pages": [
-              "essentials/settings",
-              "essentials/navigation"
+              "concepts/initialization",
+              "concepts/user-identification",
+              "concepts/messages",
+              "concepts/routing",
+              "concepts/events"
             ]
           },
           {
-            "group": "Writing content",
+            "group": "Guides",
             "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/reusable-snippets"
+              "guides/displaying-messages",
+              "guides/embedding-messages",
+              "guides/inbox-messages",
+              "guides/custom-attributes",
+              "guides/anonymous-sessions",
+              "guides/event-handling"
             ]
           },
           {
-            "group": "AI tools",
+            "group": "Advanced",
             "pages": [
-              "ai-tools/cursor",
-              "ai-tools/claude-code",
-              "ai-tools/windsurf"
+              "advanced/preview-mode",
+              "advanced/localization",
+              "advanced/debugging",
+              "advanced/local-storage"
             ]
           }
         ]
       },
       {
-        "tab": "API reference",
+        "tab": "API Reference",
         "groups": [
           {
-            "group": "API documentation",
+            "group": "Core Methods",
             "pages": [
-              "api-reference/introduction"
+              "api/setup",
+              "api/set-current-route",
+              "api/set-user-token",
+              "api/clear-user-token"
             ]
           },
           {
-            "group": "Endpoint examples",
+            "group": "Messages",
             "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
+              "api/show-message",
+              "api/embed-message",
+              "api/dismiss-message",
+              "api/update-message-display-settings"
+            ]
+          },
+          {
+            "group": "Inbox",
+            "pages": [
+              "api/get-inbox-messages",
+              "api/get-inbox-unopened-count",
+              "api/update-inbox-message-open-state",
+              "api/remove-inbox-message"
+            ]
+          },
+          {
+            "group": "User Management",
+            "pages": [
+              "api/set-user-locale",
+              "api/set-custom-attribute",
+              "api/remove-custom-attribute",
+              "api/clear-custom-attributes"
+            ]
+          },
+          {
+            "group": "Events",
+            "pages": [
+              "api/events/message-shown",
+              "api/events/message-dismissed",
+              "api/events/message-error",
+              "api/events/message-action",
+              "api/events/inbox-updated"
+            ]
+          },
+          {
+            "group": "Types",
+            "pages": [
+              "api/types/gist-config",
+              "api/types/gist-message",
+              "api/types/display-settings",
+              "api/types/inbox-message"
             ]
           }
         ]
       }
-    ],
-    "global": {
-      "anchors": [
-        {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
-        },
-        {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
-        }
-      ]
-    }
-  },
-  "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
-  },
-  "navbar": {
-    "links": [
-      {
-        "label": "Support",
-        "href": "mailto:hi@mintlify.com"
-      }
-    ],
-    "primary": {
-      "type": "button",
-      "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
-    }
-  },
-  "contextual": {
-    "options": [
-     "copy",
-     "view",
-     "chatgpt",
-     "claude",
-     "perplexity",
-     "mcp",
-     "cursor",
-     "vscode"
-   ]
-  },
-  "footer": {
-    "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
-    }
+    ]
   }
 }

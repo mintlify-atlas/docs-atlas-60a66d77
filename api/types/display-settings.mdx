@@ -1,0 +1,83 @@
+---
+title: "DisplaySettings"
+description: "Configuration for how a message should be displayed"
+---
+
+## Interface
+
+```typescript
+interface DisplaySettings {
+  displayType?: "modal" | "overlay" | "inline" | "tooltip";
+  modalPosition?: string;
+  overlayPosition?: string;
+  elementSelector?: string;
+  maxWidth?: number;
+  overlayColor?: string;
+  dismissOutsideClick?: boolean;
+}
+```
+
+## Properties
+
+<ResponseField name="displayType" type="'modal' | 'overlay' | 'inline' | 'tooltip'">
+  The type of display for the message:
+  - `"modal"`: Displayed as a modal dialog
+  - `"overlay"`: Displayed as an overlay on the page
+  - `"inline"`: Embedded inline within a specific element
+  - `"tooltip"`: Displayed as a tooltip
+</ResponseField>
+
+<ResponseField name="modalPosition" type="string">
+  Position of the modal on screen. Common values include:
+  - `"center"`
+  - `"top"`
+  - `"bottom"`
+  - `"left"`
+  - `"right"`
+</ResponseField>
+
+<ResponseField name="overlayPosition" type="string">
+  Position of the overlay on the page. Similar to modalPosition.
+</ResponseField>
+
+<ResponseField name="elementSelector" type="string">
+  CSS selector for the target element where the message should be displayed (used for inline and tooltip display types).
+</ResponseField>
+
+<ResponseField name="maxWidth" type="number">
+  Maximum width of the message in pixels.
+</ResponseField>
+
+<ResponseField name="overlayColor" type="string">
+  Background color for the overlay (CSS color value). For example: `"rgba(0, 0, 0, 0.5)"` or `"#000000"`.
+</ResponseField>
+
+<ResponseField name="dismissOutsideClick" type="boolean">
+  Whether clicking outside the message should dismiss it. Defaults to `true` for modals and overlays.
+</ResponseField>
+
+## Example
+
+```typescript
+const displaySettings: DisplaySettings = {
+  displayType: "modal",
+  modalPosition: "center",
+  maxWidth: 600,
+  overlayColor: "rgba(0, 0, 0, 0.7)",
+  dismissOutsideClick: true
+};
+
+// For inline messages
+const inlineSettings: DisplaySettings = {
+  displayType: "inline",
+  elementSelector: "#message-container",
+  maxWidth: 400
+};
+
+// For tooltips
+const tooltipSettings: DisplaySettings = {
+  displayType: "tooltip",
+  elementSelector: ".help-icon",
+  overlayPosition: "top"
+};
+```

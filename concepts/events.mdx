@@ -1,0 +1,485 @@
+---
+title: "Events"
+description: "Listen to message lifecycle events and user interactions with the event emitter"
+---
+
+## Overview
+
+The Gist Web SDK uses an event emitter to notify your application about message lifecycle events, user interactions, and custom events dispatched from within messages.
+
+## Event Emitter
+
+After initialization, the SDK exposes an event emitter at `Gist.events`:
+
+```javascript
+import Gist from '@customerio/gist-web';
+
+await Gist.setup({
+  siteId: 'your-site-id',
+  dataCenter: 'US'
+});
+
+// Listen for events
+Gist.events.on('messageShown', (message) => {
+  console.log('Message shown:', message);
+});
+```
+
+Source: `src/gist.js:59`, `src/utilities/event-emitter.ts:3-40`
+
+## Event Emitter API
+
+The event emitter provides three methods:
+
+### on()
+
+Register an event listener:
+
+```typescript
+Gist.events.on(eventName: string, callback: (event: any) => void): void
+```
+
+```javascript
+Gist.events.on('messageShown', (message) => {
+  // Handle event
+});
+```
+
+You can register multiple listeners for the same event. They will be called in the order they were registered.
+
+### off()
+
+Unregister an event listener:
+
+```typescript
+Gist.events.off(eventName: string, callback?: (event: any) => void): void
+```
+
+```javascript
+const handler = (message) => {
+  console.log(message);
+};
+
+Gist.events.on('messageShown', handler);
+
+// Later, remove the specific listener
+Gist.events.off('messageShown', handler);
+
+// Or remove all listeners for an event
+Gist.events.off('messageShown');
+```
+
+### dispatch()
+
+Dispatch an event (used internally by the SDK):
+
+```typescript
+Gist.events.dispatch(eventName: string, event: any): void
+```
+
+<Warning>
+The `dispatch()` method is used internally by the SDK. You typically don't need to call it from your application code.
+</Warning>
+
+Source: `src/utilities/event-emitter.ts:6-39`
+
+## Available Events
+
+The SDK dispatches the following events:
+
+### messageShown
+
+Fired when a message is successfully displayed:
+
+```javascript
+Gist.events.on('messageShown', (message) => {
+  console.log('Message shown:', message.messageId);
+  console.log('Instance ID:', message.instanceId);
+  console.log('Queue ID:', message.queueId);
+});
+```
+
+**Event payload**: `GistMessage` object
+
+**When fired**:
+- After the message content finishes loading
+- After the message becomes visible to the user
+- Before the view is logged to Customer.io
+
+Source: `src/gist.js:176-179`
+
+### messageDismissed
+
+Fired when a message is dismissed:
+
+```javascript
+Gist.events.on('messageDismissed', (message) => {
+  console.log('Message dismissed:', message.messageId);
+  
+  // Check the queue for the next message
+  // (SDK does this automatically)
+});
+```
+
+**Event payload**: `GistMessage` object
+
+**When fired**:
+- When a user closes a message
+- When `dismissMessage()` is called programmatically
+- When a message is automatically dismissed by a system action
+
+Source: `src/gist.js:181-186`
+
+### messageError
+
+Fired when a message fails to load or render:
+
+```javascript
+Gist.events.on('messageError', (message) => {
+  console.error('Message error:', message.messageId);
+  
+  // Log to your error tracking service
+  // Provide fallback experience
+});
+```
+
+**Event payload**: `GistMessage` object
+
+**When fired**:
+- When the message content fails to load
+- When there's a routing error within the message
+- When the renderer encounters an error
+
+Source: `src/gist.js:188-191`, `src/managers/message-manager.ts:418-427`
+
+### messageAction
+
+Fired when a user interacts with an element in a message:
+
+```javascript
+Gist.events.on('messageAction', ({ message, action, name }) => {
+  console.log('User action:', action);
+  console.log('Button name:', name);
+  console.log('Message:', message.messageId);
+  
+  // Track custom analytics
+  analytics.track('Message Clicked', {
+    messageId: message.messageId,
+    action: action,
+    buttonName: name
+  });
+});
+```
+
+**Event payload**: Object with three properties:
+- `message`: The `GistMessage` object
+- `action`: The action URL or identifier (string)
+- `name`: The name of the button or element clicked (any)
+
+**When fired**:
+- When a user clicks a button in the message
+- When a user clicks a link in the message
+- When any interactive element is triggered
+
+Source: `src/gist.js:193-202`, `src/managers/message-manager.ts:288-349`
+
+### eventDispatched
+
+Fired when a message dispatches a custom event:
+
+```javascript
+Gist.events.on('eventDispatched', ({ name, payload }) => {
+  console.log('Custom event:', name);
+  console.log('Event data:', payload);
+  
+  // Handle custom events from your messages
+  if (name === 'survey_completed') {
+    saveSurveyResponse(payload);
+  }
+});
+```
+
+**Event payload**: Object with two properties:
+- `name`: The event name (string)
+- `payload`: Custom data from the message (any)
+
+**When fired**:
+- When message content explicitly dispatches a custom event
+- Used for custom integrations and data passing
+
+Source: `src/managers/message-manager.ts:411-416`
+
+## Event Handling Patterns
+
+### Single Event Listener
+
+Handle one event at a time:
+
+```javascript
+Gist.events.on('messageShown', (message) => {
+  // Track in analytics
+  analytics.track('In-App Message Shown', {
+    messageId: message.messageId
+  });
+});
+```
+
+### Multiple Event Listeners
+
+Handle multiple events separately:
+
+```javascript
+Gist.events.on('messageShown', (message) => {
+  console.log('Shown:', message.messageId);
+});
+
+Gist.events.on('messageDismissed', (message) => {
+  console.log('Dismissed:', message.messageId);
+});
+
+Gist.events.on('messageError', (message) => {
+  console.error('Error:', message.messageId);
+});
+```
+
+### Lifecycle Tracking
+
+Track the complete message lifecycle:
+
+```javascript
+const messageLifecycles = new Map();
+
+Gist.events.on('messageShown', (message) => {
+  messageLifecycles.set(message.instanceId, {
+    messageId: message.messageId,
+    shownAt: new Date(),
+    actions: []
+  });
+});
+
+Gist.events.on('messageAction', ({ message, action, name }) => {
+  const lifecycle = messageLifecycles.get(message.instanceId);
+  if (lifecycle) {
+    lifecycle.actions.push({ action, name, timestamp: new Date() });
+  }
+});
+
+Gist.events.on('messageDismissed', (message) => {
+  const lifecycle = messageLifecycles.get(message.instanceId);
+  if (lifecycle) {
+    lifecycle.dismissedAt = new Date();
+    lifecycle.duration = lifecycle.dismissedAt - lifecycle.shownAt;
+    
+    // Send to analytics
+    console.log('Message lifecycle:', lifecycle);
+    messageLifecycles.delete(message.instanceId);
+  }
+});
+```
+
+### Conditional Event Handling
+
+Handle events differently based on message properties:
+
+```javascript
+Gist.events.on('messageShown', (message) => {
+  // Different handling for different message types
+  if (message.overlay) {
+    console.log('Overlay message shown');
+  } else {
+    console.log('Embedded message shown');
+  }
+  
+  // Handle specific campaigns
+  const campaignId = message.properties?.gist?.campaignId;
+  if (campaignId === 'onboarding-flow') {
+    startOnboardingAnalytics();
+  }
+});
+```
+
+### Error Handling with Fallbacks
+
+Provide fallback experiences when messages fail:
+
+```javascript
+Gist.events.on('messageError', (message) => {
+  console.error('Failed to load message:', message.messageId);
+  
+  // Show native fallback
+  showNativeAlert('Welcome! Check out our new features.');
+  
+  // Log to error tracking
+  errorTracker.log('Gist message error', {
+    messageId: message.messageId,
+    timestamp: new Date()
+  });
+});
+```
+
+## Analytics Integration
+
+### Segment
+
+```javascript
+Gist.events.on('messageShown', (message) => {
+  analytics.track('In-App Message Viewed', {
+    message_id: message.messageId,
+    campaign_id: message.properties?.gist?.campaignId,
+    message_type: message.overlay ? 'overlay' : 'embedded'
+  });
+});
+
+Gist.events.on('messageAction', ({ message, action, name }) => {
+  analytics.track('In-App Message Clicked', {
+    message_id: message.messageId,
+    action: action,
+    button_name: name
+  });
+});
+```
+
+### Google Analytics
+
+```javascript
+Gist.events.on('messageShown', (message) => {
+  gtag('event', 'message_shown', {
+    message_id: message.messageId,
+    campaign_id: message.properties?.gist?.campaignId
+  });
+});
+
+Gist.events.on('messageAction', ({ message, action, name }) => {
+  gtag('event', 'message_action', {
+    message_id: message.messageId,
+    action: action,
+    button_name: name
+  });
+});
+```
+
+### Mixpanel
+
+```javascript
+Gist.events.on('messageShown', (message) => {
+  mixpanel.track('In-App Message Shown', {
+    'Message ID': message.messageId,
+    'Campaign ID': message.properties?.gist?.campaignId,
+    'Is Overlay': message.overlay
+  });
+});
+```
+
+## Cleanup and Memory Management
+
+Always clean up event listeners when they're no longer needed:
+
+```javascript
+// In a React component
+import { useEffect } from 'react';
+import Gist from '@customerio/gist-web';
+
+function MyComponent() {
+  useEffect(() => {
+    const handler = (message) => {
+      console.log('Message shown:', message);
+    };
+    
+    Gist.events.on('messageShown', handler);
+    
+    // Cleanup on unmount
+    return () => {
+      Gist.events.off('messageShown', handler);
+    };
+  }, []);
+  
+  return <div>My Component</div>;
+}
+```
+
+```javascript
+// In vanilla JavaScript
+class MessageTracker {
+  constructor() {
+    this.handlers = {
+      messageShown: (message) => this.onMessageShown(message),
+      messageDismissed: (message) => this.onMessageDismissed(message)
+    };
+    
+    this.start();
+  }
+  
+  start() {
+    Gist.events.on('messageShown', this.handlers.messageShown);
+    Gist.events.on('messageDismissed', this.handlers.messageDismissed);
+  }
+  
+  stop() {
+    Gist.events.off('messageShown', this.handlers.messageShown);
+    Gist.events.off('messageDismissed', this.handlers.messageDismissed);
+  }
+  
+  onMessageShown(message) {
+    // Handle event
+  }
+  
+  onMessageDismissed(message) {
+    // Handle event
+  }
+}
+```
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Set up listeners early" icon="bolt">
+    Register event listeners immediately after calling `Gist.setup()` to avoid missing early events.
+  </Card>
+
+  <Card title="Clean up listeners" icon="broom">
+    Always remove event listeners when components unmount or when they're no longer needed to prevent memory leaks.
+  </Card>
+
+  <Card title="Use named functions" icon="signature">
+    Use named function references instead of anonymous functions so you can remove specific listeners later.
+  </Card>
+
+  <Card title="Handle errors gracefully" icon="shield">
+    Always listen for `messageError` events and provide fallback experiences when messages fail to load.
+  </Card>
+</CardGroup>
+
+## Debugging Events
+
+Enable logging to see when events are dispatched:
+
+```javascript
+await Gist.setup({
+  siteId: 'your-site-id',
+  dataCenter: 'US',
+  logging: true
+});
+
+// Console will show:
+// "Message shown: msg_abc123"
+// "Message dismissed: msg_abc123"
+// "Message action: /dashboard, https://example.com with name Learn More on instance-123"
+```
+
+You can also create a debug listener that logs all events:
+
+```javascript
+const events = ['messageShown', 'messageDismissed', 'messageError', 'messageAction', 'eventDispatched'];
+
+events.forEach(eventName => {
+  Gist.events.on(eventName, (data) => {
+    console.log(`[Gist Event] ${eventName}:`, data);
+  });
+});
+```
+
+## Next Steps
+
+- Learn about [message lifecycle](/concepts/messages)
+- See the [event handling guide](/guides/event-handling)
+- Explore [API reference for events](/api/events/message-shown)

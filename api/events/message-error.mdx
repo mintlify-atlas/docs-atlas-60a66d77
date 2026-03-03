@@ -1,0 +1,151 @@
+---
+title: messageError
+description: Event triggered when an error occurs while displaying a message
+---
+
+The `messageError` event is dispatched when an error occurs during message rendering or display. This event is crucial for error tracking and debugging message issues.
+
+## Event Name
+
+`messageError`
+
+## When Triggered
+
+This event is triggered when:
+- A message fails to load or render properly
+- There's an error in the message content or configuration
+- Network issues prevent message assets from loading
+- The message iframe encounters an error
+
+## Event Payload
+
+The event payload contains the message object with the following structure:
+
+<ResponseField name="messageId" type="string" required>
+  The unique identifier for the message template that encountered an error
+</ResponseField>
+
+<ResponseField name="queueId" type="string">
+  The queue identifier if this message was delivered via the message queue
+</ResponseField>
+
+<ResponseField name="instanceId" type="string">
+  The unique instance identifier for this specific message rendering attempt
+</ResponseField>
+
+<ResponseField name="overlay" type="boolean">
+  Whether the message was configured to display as an overlay
+</ResponseField>
+
+<ResponseField name="elementId" type="string | null">
+  The DOM element ID where the message was attempted to be embedded
+</ResponseField>
+
+<ResponseField name="currentRoute" type="string">
+  The route where the error occurred
+</ResponseField>
+
+<ResponseField name="position" type="string | null">
+  The intended position of the message on the screen
+</ResponseField>
+
+<ResponseField name="displaySettings" type="DisplaySettings">
+  Display configuration for the message
+</ResponseField>
+
+<ResponseField name="properties" type="MessageProperties">
+  Custom properties associated with the message
+</ResponseField>
+
+## Listening to the Event
+
+Use the `Gist.events.on()` method to listen for this event:
+
+```javascript
+Gist.events.on('messageError', (message) => {
+  console.error('Message error:', message);
+});
+```
+
+## Example
+
+```javascript
+// Track and report message errors
+Gist.events.on('messageError', (message) => {
+  // Log error to analytics or error tracking service
+  console.error('Failed to display message:', {
+    messageId: message.messageId,
+    instanceId: message.instanceId,
+    route: message.currentRoute,
+    elementId: message.elementId
+  });
+  
+  // Send to error tracking service
+  errorTracker.captureException(new Error('Gist message failed to load'), {
+    extra: {
+      messageId: message.messageId,
+      instanceId: message.instanceId,
+      route: message.currentRoute
+    }
+  });
+  
+  // Show fallback content or notification
+  if (message.messageId === 'critical-announcement') {
+    showFallbackNotification();
+  }
+});
+
+// Also track successful messages for comparison
+Gist.events.on('messageShown', (message) => {
+  console.log('Message successfully shown:', message.messageId);
+});
+```
+
+## Error Handling Best Practices
+
+```javascript
+// Set up comprehensive error tracking
+Gist.events.on('messageError', (message) => {
+  // 1. Log detailed error information
+  const errorDetails = {
+    timestamp: new Date().toISOString(),
+    messageId: message.messageId,
+    instanceId: message.instanceId,
+    route: message.currentRoute,
+    displayType: message.displaySettings?.displayType,
+    embedded: !!message.elementId
+  };
+  
+  console.error('Gist Message Error:', errorDetails);
+  
+  // 2. Send to monitoring service
+  monitoring.logError('gist_message_error', errorDetails);
+  
+  // 3. Implement retry logic for critical messages
+  if (message.properties?.critical) {
+    setTimeout(() => {
+      console.log('Retrying critical message...');
+      Gist.showMessage({ messageId: message.messageId });
+    }, 3000);
+  }
+});
+```
+
+## Remove Event Listener
+
+To remove an event listener, use `Gist.events.off()`:
+
+```javascript
+const errorHandler = (message) => {
+  console.error('Message error:', message);
+};
+
+// Add listener
+Gist.events.on('messageError', errorHandler);
+
+// Remove specific listener
+Gist.events.off('messageError', errorHandler);
+
+// Remove all listeners for this event
+Gist.events.off('messageError');
+```

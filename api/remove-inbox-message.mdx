@@ -1,0 +1,120 @@
+---
+title: "removeInboxMessage"
+description: "Remove a message from the user's inbox"
+---
+
+Removes an inbox message from local storage and logs a view event to the Customer.io server. Once removed, the message will no longer appear in the inbox.
+
+## Method Signature
+
+```javascript
+Gist.removeInboxMessage(queueId)
+```
+
+## Parameters
+
+<ParamField path="queueId" type="string" required>
+  The queue ID of the message to remove
+</ParamField>
+
+## Returns
+
+<ResponseField name="Promise<void>" type="void">
+  Resolves when the message has been successfully removed
+</ResponseField>
+
+## Events
+
+This method triggers the following event:
+
+<ResponseField name="messageInboxUpdated">
+  Dispatched with the updated list of inbox messages after removal
+</ResponseField>
+
+## Example Usage
+
+```javascript
+// Remove a message
+try {
+  await Gist.removeInboxMessage('queue_123');
+  console.log('Message removed successfully');
+} catch (error) {
+  console.error('Failed to remove message:', error);
+}
+```
+
+```javascript
+// Remove message with UI feedback
+const handleDeleteMessage = async (messageId) => {
+  const confirmed = confirm('Are you sure you want to delete this message?');
+  
+  if (confirmed) {
+    try {
+      await Gist.removeInboxMessage(messageId);
+      
+      // Refresh inbox display
+      const messages = await Gist.getInboxMessages();
+      renderInboxMessages(messages);
+      
+      // Update unopened count
+      const count = await Gist.getInboxUnopenedCount();
+      updateNotificationBadge(count);
+    } catch (error) {
+      alert('Failed to delete message. Please try again.');
+    }
+  }
+};
+```
+
+```javascript
+// Listen for inbox updates after removal
+Gist.events.on('messageInboxUpdated', (messages) => {
+  console.log(`Inbox now has ${messages.length} messages`);
+  renderInboxMessages(messages);
+});
+```
+
+```javascript
+// Bulk remove messages
+const removeMultipleMessages = async (queueIds) => {
+  for (const queueId of queueIds) {
+    try {
+      await Gist.removeInboxMessage(queueId);
+    } catch (error) {
+      console.error(`Failed to remove message ${queueId}:`, error);
+    }
+  }
+};
+```
+
+## Error Handling
+
+This method throws an error if:
+- The API request fails (non-2xx response)
+- No user token is set
+- The queue ID is not found
+
+```javascript
+try {
+  await Gist.removeInboxMessage('queue_123');
+} catch (error) {
+  if (error.message.includes('Failed to remove inbox message')) {
+    // Handle API error
+    console.error('Server error:', error);
+  }
+}
+```
+
+## Notes
+
+- Removal is permanent and cannot be undone
+- The message is removed from both local storage and logged to the server
+- Local storage is updated with a 60-minute TTL
+- The `messageInboxUpdated` event is dispatched after successful removal
+- Changes are reflected immediately in `getInboxMessages()` results
+
+## Related Methods
+
+- [getInboxMessages](/api/get-inbox-messages) - Get all inbox messages
+- [getInboxUnopenedCount](/api/get-inbox-unopened-count) - Get count of unopened messages
+- [updateInboxMessageOpenState](/api/update-inbox-message-open-state) - Mark message as opened or unopened

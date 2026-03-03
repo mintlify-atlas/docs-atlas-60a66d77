@@ -1,0 +1,330 @@
+---
+title: "Routing"
+description: "Learn how to target messages to specific pages with route-based rules"
+---
+
+## Overview
+
+Routing allows you to control which messages appear on which pages of your application. The Gist Web SDK uses regular expression patterns to match the current page route against message rules.
+
+## Setting the Current Route
+
+For single-page applications (SPAs), you must explicitly tell the SDK when the route changes:
+
+```javascript
+import Gist from '@customerio/gist-web';
+
+// When the route changes in your app
+await Gist.setCurrentRoute('/dashboard');
+```
+
+<Note>
+The `setCurrentRoute()` method is asynchronous. It triggers immediate evaluation of message routing rules and checks the message queue.
+</Note>
+
+For multi-page applications, the SDK automatically uses `window.location.pathname` if no route is set.
+
+Source: `src/gist.js:105-110`
+
+## How Route Matching Works
+
+When a message has a route rule, the SDK:
+
+1. Gets the current route from `Gist.currentRoute` or falls back to `window.location.pathname`
+2. Converts the route rule to a regular expression
+3. Tests whether the current route matches the pattern
+4. Only displays the message if the route matches
+
+```javascript
+// Message with route rule
+const message = {
+  messageId: 'msg_abc123',
+  properties: {
+    gist: {
+      routeRuleWeb: '^/dashboard'
+    }
+  }
+};
+
+// Will match routes like:
+// - /dashboard
+// - /dashboard/settings
+// - /dashboard/analytics
+
+// Will NOT match routes like:
+// - /home
+// - /settings
+// - /account/dashboard
+```
+
+Source: `src/managers/queue-manager.ts:100-114`
+
+## Route Rule Patterns
+
+Route rules use JavaScript regular expressions. Here are common patterns:
+
+### Exact Match
+
+Match only a specific page:
+
+```javascript
+routeRuleWeb: '^/pricing$'
+// Matches: /pricing
+// Does NOT match: /pricing/details or /products/pricing
+```
+
+### Prefix Match
+
+Match all routes starting with a pattern:
+
+```javascript
+routeRuleWeb: '^/dashboard'
+// Matches: /dashboard, /dashboard/settings, /dashboard/users/123
+```
+
+### Multiple Options
+
+Match any of several routes:
+
+```javascript
+routeRuleWeb: '^/(pricing|plans)$'
+// Matches: /pricing OR /plans
+// Does NOT match: /pricing/details
+```
+
+### Wildcard Matching
+
+Match routes with variable segments:
+
+```javascript
+routeRuleWeb: '^/users/[^/]+/profile$'
+// Matches: /users/123/profile, /users/abc/profile
+// Does NOT match: /users/123/settings
+```
+
+### Exclude Routes
+
+Match everything except specific routes:
+
+```javascript
+routeRuleWeb: '^(?!/(login|signup)).*$'
+// Matches: Any route EXCEPT /login or /signup
+```
+
+<Tip>
+Test your route rules with an online regex tester before deploying. Remember that route rules are case-sensitive.
+</Tip>
+
+## Route Changes and Message Behavior
+
+When you call `setCurrentRoute()`, the SDK:
+
+1. Updates the current route value
+2. Checks all currently displayed messages:
+   - Removes messages that no longer exist in the DOM (in SPAs)
+   - Keeps messages that are still valid
+3. Evaluates all queued messages against the new route
+4. Displays eligible messages according to priority
+
+```javascript
+// User navigates to /dashboard
+await Gist.setCurrentRoute('/dashboard');
+// SDK shows messages targeted to /dashboard
+
+// User navigates to /settings
+await Gist.setCurrentRoute('/settings');
+// SDK hides /dashboard messages (if they're no longer in DOM)
+// SDK shows messages targeted to /settings
+```
+
+Source: `src/gist.js:105-110`, `src/managers/queue-manager.ts:84-97`
+
+## Integration with SPAs
+
+### React Router
+
+```javascript
+import { useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
+import Gist from '@customerio/gist-web';
+
+function App() {
+  const location = useLocation();
+
+  useEffect(() => {
+    // Update Gist route on navigation
+    Gist.setCurrentRoute(location.pathname);
+  }, [location]);
+
+  return <div>{/* Your app */}</div>;
+}
+```
+
+### Vue Router
+
+```javascript
+import { watch } from 'vue';
+import { useRoute } from 'vue-router';
+import Gist from '@customerio/gist-web';
+
+const route = useRoute();
+
+watch(
+  () => route.path,
+  (newPath) => {
+    Gist.setCurrentRoute(newPath);
+  }
+);
+```
+
+### Next.js
+
+```javascript
+import { useEffect } from 'react';
+import { useRouter } from 'next/router';
+import Gist from '@customerio/gist-web';
+
+function MyApp({ Component, pageProps }) {
+  const router = useRouter();
+
+  useEffect(() => {
+    const handleRouteChange = (url) => {
+      Gist.setCurrentRoute(url);
+    };
+
+    router.events.on('routeChangeComplete', handleRouteChange);
+    return () => {
+      router.events.off('routeChangeComplete', handleRouteChange);
+    };
+  }, [router]);
+
+  return <Component {...pageProps} />;
+}
+```
+
+### Angular
+
+```typescript
+import { Component } from '@angular/core';
+import { Router, NavigationEnd } from '@angular/router';
+import { filter } from 'rxjs/operators';
+import Gist from '@customerio/gist-web';
+
+@Component({
+  selector: 'app-root',
+  template: '<router-outlet></router-outlet>'
+})
+export class AppComponent {
+  constructor(private router: Router) {
+    this.router.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe((event: NavigationEnd) => {
+        Gist.setCurrentRoute(event.url);
+      });
+  }
+}
+```
+
+## Configuring Routes in Customer.io
+
+When creating messages in Customer.io, you specify route rules in the message properties:
+
+1. Navigate to your message in the Customer.io dashboard
+2. In the message properties, find the **Web Route Rule** field
+3. Enter your regular expression pattern (without delimiters)
+4. Test the pattern with example routes before publishing
+
+The SDK reads this rule from `message.properties.gist.routeRuleWeb`.
+
+Source: `src/types.ts:46-58`
+
+## Route Logging
+
+Enable logging to see route matching in action:
+
+```javascript
+await Gist.setup({
+  siteId: 'your-site-id',
+  dataCenter: 'US',
+  logging: true
+});
+
+await Gist.setCurrentRoute('/dashboard');
+// Console: "Current route set to: /dashboard"
+// Console: "Verifying route /dashboard against rule: ^/dashboard"
+// Console: "Message shown: msg_abc123"
+```
+
+Source: `src/gist.js:107`, `src/managers/queue-manager.ts:108`
+
+## Messages Without Route Rules
+
+Messages without route rules are considered eligible on all pages:
+
+```javascript
+const message = {
+  messageId: 'msg_abc123',
+  properties: {
+    gist: {
+      // No routeRuleWeb property
+    }
+  }
+};
+// This message can appear on any page
+```
+
+Use route-less messages for:
+- Global announcements
+- Cookie consent banners
+- Critical alerts that should appear everywhere
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Call setCurrentRoute early and often">
+    In SPAs, call `setCurrentRoute()` immediately after route changes. Don't wait for component mounting or data loading.
+  </Accordion>
+
+  <Accordion title="Use consistent route formats">
+    Always use the same format for routes (with or without trailing slashes, with or without query parameters). Be consistent across your app and route rules.
+  </Accordion>
+
+  <Accordion title="Test route rules thoroughly">
+    Test your route rules with various route patterns, including edge cases like nested routes, dynamic segments, and query parameters.
+  </Accordion>
+
+  <Accordion title="Start with simple patterns">
+    Begin with simple prefix matches like `^/dashboard` before moving to complex regex patterns. Simple patterns are easier to maintain and debug.
+  </Accordion>
+
+  <Accordion title="Document your route rules">
+    Keep documentation of your route rules in Customer.io or your codebase. Include example routes that match and don't match.
+  </Accordion>
+</AccordionGroup>
+
+## Troubleshooting
+
+### Messages not appearing on the expected page
+
+1. Enable logging and check the console for route matching logs
+2. Verify the route rule regex pattern with a regex tester
+3. Check that `setCurrentRoute()` is being called with the correct route
+4. Ensure the route format matches what the rule expects (trailing slashes, etc.)
+
+### Messages appearing on wrong pages
+
+1. Check if the route rule is too broad (e.g., missing `$` anchor)
+2. Verify that `setCurrentRoute()` is being called on every navigation
+3. Test the regex pattern against all your app routes
+
+### Messages not updating on route change
+
+1. Verify `setCurrentRoute()` is async and being awaited
+2. Check that your router integration is triggering on all navigation types (back/forward, programmatic, etc.)
+3. Enable logging to see if route changes are being detected
+
+## Next Steps
+
+- Learn about [message types and lifecycle](/concepts/messages)
+- Explore the [setCurrentRoute API reference](/api/set-current-route)
+- See examples in the [displaying messages guide](/guides/displaying-messages)

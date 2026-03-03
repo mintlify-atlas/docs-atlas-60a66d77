@@ -1,0 +1,65 @@
+---
+title: 'clearUserToken'
+description: 'Clear the current user identification'
+---
+
+## Method Signature
+
+```javascript
+Gist.clearUserToken(): Promise<void>
+```
+
+Clears the current user token, removing user identification. If anonymous sessions are enabled, a guest session will be created automatically.
+
+## Parameters
+
+This method takes no parameters.
+
+## Returns
+
+<ResponseField name="Promise<void>" type="Promise<void>">
+  Resolves when the user token is cleared and message queue listener has restarted
+</ResponseField>
+
+## Example
+
+```javascript
+import Gist from '@customer.io/gist-web';
+
+// Clear user token when user logs out
+await Gist.clearUserToken();
+
+// Example with a logout function
+async function handleLogout() {
+  // Clear your app's authentication
+  localStorage.removeItem('authToken');
+  
+  // Clear Gist user token
+  await Gist.clearUserToken();
+  
+  // Redirect to login page
+  window.location.href = '/login';
+}
+```
+
+## Example from Source
+
+```javascript
+static async clearUserToken() {
+  if (this.config.isPreviewSession) return;
+  clearUserToken();
+  if (this.config.useAnonymousSession) {
+    useGuestSession();
+  }
+  stopSSEListener(true);
+  await startQueueListener();
+}
+```
+
+## Notes
+
+- This method has no effect in preview sessions.
+- If `useAnonymousSession` was enabled during setup, clearing the user token will automatically create a guest session.
+- The SDK restarts the message queue listener after clearing the token to fetch messages for the anonymous or guest session.
+- Any currently displayed user-specific messages will remain visible until dismissed.
+- This is typically called when a user logs out of your application.

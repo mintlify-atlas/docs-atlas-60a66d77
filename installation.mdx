@@ -1,0 +1,124 @@
+---
+title: Installation
+description: Install the Gist Web SDK in your web application using npm, yarn, pnpm, or CDN
+---
+
+## Package Manager Installation
+
+Install the Gist Web SDK using your preferred package manager:
+
+<CodeGroup>
+```bash npm
+npm install customerio-gist-web
+```
+
+```bash yarn
+yarn add customerio-gist-web
+```
+
+```bash pnpm
+pnpm add customerio-gist-web
+```
+</CodeGroup>
+
+### Import in Your Application
+
+After installation, import the SDK in your JavaScript or TypeScript file:
+
+```javascript
+import Gist from 'customerio-gist-web';
+
+// Initialize the SDK
+Gist.setup({
+  siteId: 'your-site-id',
+  dataCenter: 'us' // or 'eu'
+});
+```
+
+<Note>
+  The package includes TypeScript type definitions at `dist/types/index.d.ts`.
+</Note>
+
+## CDN Installation
+
+You can also include the Gist Web SDK directly via a script tag. The minified build is available in the `dist` directory:
+
+```html
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>My App</title>
+  </head>
+  <body>
+    <!-- Your app content -->
+    
+    <!-- Include Gist SDK -->
+    <script src="https://unpkg.com/customerio-gist-web/dist/gist.min.js"></script>
+    <script>
+      // SDK is available as global Gist object
+      Gist.setup({
+        siteId: 'your-site-id',
+        dataCenter: 'us'
+      });
+    </script>
+  </body>
+</html>
+```
+
+<Tip>
+  When using the CDN approach, the SDK is available as a global `Gist` object after the script loads.
+</Tip>
+
+## Configuration Options
+
+The `setup()` method accepts a configuration object with the following properties:
+
+<ParamField path="siteId" type="string" required>
+  Your Customer.io site ID. Find this in your Customer.io workspace settings.
+</ParamField>
+
+<ParamField path="dataCenter" type="string" required>
+  The data center region for your Customer.io workspace. Options: `'us'` or `'eu'`.
+</ParamField>
+
+<ParamField path="env" type="string" default="prod">
+  The environment to use. Options: `'prod'`, `'dev'`, or `'local'`. Use `'dev'` for testing.
+</ParamField>
+
+<ParamField path="logging" type="boolean" default="false">
+  Enable console logging for debugging. Helpful during development.
+</ParamField>
+
+<ParamField path="useAnonymousSession" type="boolean" default="false">
+  Enable anonymous sessions for users who aren't logged in. When enabled, the SDK automatically creates a guest session.
+</ParamField>
+
+<ParamField path="experiments" type="boolean" default="false">
+  Enable experimental features (for advanced use cases).
+</ParamField>
+
+## Dependencies
+
+The Gist Web SDK has one runtime dependency:
+
+- **uuid** (v8.3.2) - Used for generating unique identifiers
+
+All other dependencies are development dependencies and not included in the production bundle.
+
+## Browser Support
+
+The SDK works in all modern browsers that support:
+- ES6 features
+- Promise API
+- Fetch API or XMLHttpRequest
+- Local Storage
+
+<Warning>
+  Internet Explorer is not officially supported. For legacy browser support, you may need to include polyfills.
+</Warning>
+
+## Next Steps
+
+<Card title="Quick Start Guide" icon="rocket" href="/quickstart">
+  Learn how to initialize the SDK and display your first message
+</Card>

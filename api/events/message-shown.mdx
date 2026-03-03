@@ -1,0 +1,142 @@
+---
+title: messageShown
+description: Event triggered when a message is successfully displayed to the user
+---
+
+The `messageShown` event is dispatched when a Gist message has been successfully rendered and displayed to the user. This event is useful for tracking message impressions and triggering analytics.
+
+## Event Name
+
+`messageShown`
+
+## When Triggered
+
+This event is triggered when:
+- A message is successfully shown using `Gist.showMessage()`
+- An embedded message is rendered using `Gist.embedMessage()`
+- A message from the queue is automatically displayed to the user
+
+## Event Payload
+
+The event payload contains the message object with the following structure:
+
+<ResponseField name="messageId" type="string" required>
+  The unique identifier for the message template
+</ResponseField>
+
+<ResponseField name="queueId" type="string">
+  The queue identifier if this message was delivered via the message queue
+</ResponseField>
+
+<ResponseField name="instanceId" type="string">
+  The unique instance identifier for this specific message rendering
+</ResponseField>
+
+<ResponseField name="overlay" type="boolean">
+  Whether the message is displayed as an overlay
+</ResponseField>
+
+<ResponseField name="elementId" type="string | null">
+  The DOM element ID where the message is embedded (for embedded messages)
+</ResponseField>
+
+<ResponseField name="currentRoute" type="string">
+  The route where the message was shown
+</ResponseField>
+
+<ResponseField name="position" type="string | null">
+  The position of the message on the screen
+</ResponseField>
+
+<ResponseField name="displaySettings" type="DisplaySettings">
+  Display configuration for the message
+  
+  <Expandable title="properties">
+    <ResponseField name="displayType" type="'modal' | 'overlay' | 'inline' | 'tooltip'">
+      The type of display for the message
+    </ResponseField>
+    
+    <ResponseField name="modalPosition" type="string">
+      Position of the modal (if displayType is modal)
+    </ResponseField>
+    
+    <ResponseField name="overlayPosition" type="string">
+      Position of the overlay (if displayType is overlay)
+    </ResponseField>
+    
+    <ResponseField name="elementSelector" type="string">
+      CSS selector for the target element
+    </ResponseField>
+    
+    <ResponseField name="maxWidth" type="number">
+      Maximum width of the message in pixels
+    </ResponseField>
+    
+    <ResponseField name="overlayColor" type="string">
+      Background color of the overlay
+    </ResponseField>
+    
+    <ResponseField name="dismissOutsideClick" type="boolean">
+      Whether clicking outside dismisses the message
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="properties" type="MessageProperties">
+  Custom properties associated with the message
+</ResponseField>
+
+## Listening to the Event
+
+Use the `Gist.events.on()` method to listen for this event:
+
+```javascript
+Gist.events.on('messageShown', (message) => {
+  console.log('Message shown:', message);
+});
+```
+
+## Example
+
+```javascript
+// Track when messages are displayed
+Gist.events.on('messageShown', (message) => {
+  // Send analytics event
+  analytics.track('Gist Message Shown', {
+    messageId: message.messageId,
+    instanceId: message.instanceId,
+    route: message.currentRoute,
+    displayType: message.displaySettings?.displayType
+  });
+  
+  console.log(`Message ${message.messageId} displayed at ${message.currentRoute}`);
+});
+
+// Show a message
+await Gist.showMessage({
+  messageId: 'welcome-message',
+  displaySettings: {
+    displayType: 'modal',
+    modalPosition: 'center'
+  }
+});
+```
+
+## Remove Event Listener
+
+To remove an event listener, use `Gist.events.off()`:
+
+```javascript
+const handler = (message) => {
+  console.log('Message shown:', message);
+};
+
+// Add listener
+Gist.events.on('messageShown', handler);
+
+// Remove specific listener
+Gist.events.off('messageShown', handler);
+
+// Remove all listeners for this event
+Gist.events.off('messageShown');
+```

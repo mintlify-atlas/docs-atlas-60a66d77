@@ -1,0 +1,63 @@
+---
+title: 'setUserToken'
+description: 'Identify a user to receive personalized messages'
+---
+
+## Method Signature
+
+```javascript
+Gist.setUserToken(userToken: string, expiryDate?: Date): Promise<void>
+```
+
+Sets the user token to identify the current user. This allows the SDK to fetch and display personalized messages for the identified user.
+
+## Parameters
+
+<ParamField path="userToken" type="string" required>
+  The unique token identifying the user. This should match the identifier used in Customer.io.
+</ParamField>
+
+<ParamField path="expiryDate" type="Date">
+  Optional expiration date for the user token. The token will be automatically cleared after this date.
+</ParamField>
+
+## Returns
+
+<ResponseField name="Promise<void>" type="Promise<void>">
+  Resolves when the user token is set and message queue listener has restarted
+</ResponseField>
+
+## Example
+
+```javascript
+import Gist from '@customer.io/gist-web';
+
+// Set user token after user logs in
+await Gist.setUserToken('user-123');
+
+// Set user token with expiry date (30 days from now)
+const expiryDate = new Date();
+expiryDate.setDate(expiryDate.getDate() + 30);
+
+await Gist.setUserToken('user-123', expiryDate);
+```
+
+## Example from Source
+
+```javascript
+/** @param {string} userToken @param {Date} [expiryDate] */
+static async setUserToken(userToken, expiryDate) {
+  if (this.config.isPreviewSession) return;
+  setUserToken(userToken, expiryDate);
+  stopSSEListener(true);
+  await startQueueListener();
+}
+```
+
+## Notes
+
+- This method has no effect in preview sessions.
+- Setting a user token stops the current message queue listener and starts a new one for the identified user.
+- If a user token was previously set, calling this method will replace it.
+- The user token is stored in local storage and persists across browser sessions until it expires or is cleared.
+- Call [clearUserToken](/api/clear-user-token) to remove the user identification.

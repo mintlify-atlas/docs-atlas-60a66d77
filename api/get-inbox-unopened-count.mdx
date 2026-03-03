@@ -1,0 +1,56 @@
+---
+title: "getInboxUnopenedCount"
+description: "Get the count of unopened inbox messages"
+---
+
+Returns the number of inbox messages that have not been opened by the current user. This is useful for displaying notification badges or counts in your UI.
+
+## Method Signature
+
+```javascript
+Gist.getInboxUnopenedCount()
+```
+
+## Returns
+
+<ResponseField name="Promise<number>" type="number">
+  The count of unopened messages
+</ResponseField>
+
+## Example Usage
+
+```javascript
+// Get unopened message count
+const count = await Gist.getInboxUnopenedCount();
+
+console.log(`You have ${count} unopened messages`);
+
+// Update a notification badge
+const badge = document.querySelector('.notification-badge');
+if (count > 0) {
+  badge.textContent = count;
+  badge.style.display = 'block';
+} else {
+  badge.style.display = 'none';
+}
+```
+
+```javascript
+// Listen for inbox updates to refresh the count
+Gist.events.on('messageInboxUpdated', async () => {
+  const count = await Gist.getInboxUnopenedCount();
+  updateNotificationBadge(count);
+});
+```
+
+## Notes
+
+- Only counts messages where `opened` is `false` or `undefined`
+- Expired messages are automatically excluded from the count
+- Returns `0` if no user token is set
+- This method reads from local storage and does not make a network request
+
+## Related Methods
+
+- [getInboxMessages](/api/get-inbox-messages) - Get all inbox messages
+- [updateInboxMessageOpenState](/api/update-inbox-message-open-state) - Mark message as opened or unopened

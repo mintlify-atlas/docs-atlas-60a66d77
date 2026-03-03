@@ -1,0 +1,368 @@
+---
+title: Inbox Messages
+description: Manage inbox messages with read/unread states and message removal
+---
+
+The Gist Web SDK provides a built-in inbox system for managing persistent messages that users can access at any time. This guide covers how to retrieve, update, and manage inbox messages.
+
+## Overview
+
+Inbox messages are special messages that:
+
+- Persist in local storage until explicitly removed
+- Have read/unread states that you can track and update
+- Can be filtered by topics
+- Are cached locally for 60 minutes
+- Automatically expire based on their expiry date
+- Support event-driven updates
+
+## Retrieving Inbox Messages
+
+### Get All Inbox Messages
+
+Retrieve all inbox messages for the current user:
+
+```javascript
+const messages = await _cio.getInboxMessages();
+
+console.log(`Total messages: ${messages.length}`);
+messages.forEach(message => {
+  console.log(`Message ID: ${message.messageId}`);
+  console.log(`Opened: ${message.opened}`);
+  console.log(`Queue ID: ${message.queueId}`);
+});
+```
+
+### Get Unopened Message Count
+
+Quickly get the count of unread messages:
+
+```javascript
+const unopenedCount = await _cio.getInboxUnopenedCount();
+
+console.log(`Unread messages: ${unopenedCount}`);
+
+// Update UI badge
+document.getElementById('inbox-badge').textContent = unopenedCount;
+```
+
+## Message Structure
+
+Each inbox message has the following structure:
+
+```typescript
+{
+  messageId: string;      // Unique message identifier
+  queueId?: string;       // Queue identifier for tracking
+  opened?: boolean;       // Read/unread state (false by default)
+  expiry?: string;        // ISO date string for when message expires
+  topics?: string[];      // Array of topic tags
+  properties?: object;    // Custom message properties
+}
+```
+
+## Managing Read States
+
+### Mark Message as Read
+
+Update a message's opened state when the user reads it:
+
+```javascript
+try {
+  await _cio.updateInboxMessageOpenState(queueId, true);
+  console.log('Message marked as read');
+} catch (error) {
+  console.error('Failed to update message state:', error);
+}
+```
+
+### Mark Message as Unread
+
+You can also mark a message as unread:
+
+```javascript
+await _cio.updateInboxMessageOpenState(queueId, false);
+```
+
+### Complete Example: Inbox UI
+
+Here's how to build a simple inbox interface:
+
+<Steps>
+  <Step title="Display inbox messages">
+    ```javascript
+    async function displayInbox() {
+      const messages = await _cio.getInboxMessages();
+      const inboxContainer = document.getElementById('inbox');
+      
+      inboxContainer.innerHTML = messages.map(message => `
+        <div class="inbox-item ${message.opened ? 'read' : 'unread'}" 
+             data-queue-id="${message.queueId}">
+          <h3>${message.properties?.title || 'Message'}</h3>
+          <p>${message.properties?.preview || ''}</p>
+          <button onclick="markAsRead('${message.queueId}')">Mark as Read</button>
+          <button onclick="removeMessage('${message.queueId}')">Delete</button>
+        </div>
+      `).join('');
+    }
+    ```
+  </Step>
+  
+  <Step title="Mark as read when clicked">
+    ```javascript
+    async function markAsRead(queueId) {
+      try {
+        await _cio.updateInboxMessageOpenState(queueId, true);
+        // Refresh the inbox display
+        await displayInbox();
+        // Update badge count
+        await updateBadge();
+      } catch (error) {
+        console.error('Error marking message as read:', error);
+      }
+    }
+    ```
+  </Step>
+  
+  <Step title="Update badge count">
+    ```javascript
+    async function updateBadge() {
+      const count = await _cio.getInboxUnopenedCount();
+      const badge = document.getElementById('inbox-badge');
+      
+      if (count > 0) {
+        badge.textContent = count;
+        badge.style.display = 'block';
+      } else {
+        badge.style.display = 'none';
+      }
+    }
+    ```
+  </Step>
+</Steps>
+
+## Removing Messages
+
+Remove a message from the inbox when the user dismisses it:
+
+```javascript
+async function removeMessage(queueId) {
+  try {
+    await _cio.removeInboxMessage(queueId);
+    console.log('Message removed from inbox');
+    
+    // Refresh inbox display
+    await displayInbox();
+    await updateBadge();
+  } catch (error) {
+    console.error('Failed to remove message:', error);
+  }
+}
+```
+
+### What Happens When Removing
+
+When you remove an inbox message:
+
+1. A message view is logged to track the removal
+2. The message is removed from local storage
+3. A `messageInboxUpdated` event is dispatched
+4. The message will not appear in future `getInboxMessages()` calls
+
+## Filtering by Topics
+
+Inbox messages can be organized by topics. To filter messages by topic, you'll need to filter the results:
+
+```javascript
+const messages = await _cio.getInboxMessages();
+
+// Filter by specific topic
+const promoMessages = messages.filter(message => 
+  message.topics?.includes('promotions')
+);
+
+// Filter by multiple topics
+const importantMessages = messages.filter(message => 
+  message.topics?.some(topic => ['urgent', 'important'].includes(topic))
+);
+
+// Messages without topics (default topic)
+const defaultMessages = messages.filter(message => 
+  !message.topics || message.topics.length === 0
+);
+```
+
+## Listening to Inbox Events
+
+### Inbox Updated Event
+
+Listen for when the inbox is updated:
+
+```javascript
+_cio.events.on('messageInboxUpdated', (messages) => {
+  console.log('Inbox updated:', messages);
+  
+  // Update your UI
+  displayInbox();
+  updateBadge();
+});
+```
+
+### Inbox Message Action Event
+
+Listen for when a specific inbox message is opened or unopened:
+
+```javascript
+_cio.events.on('inboxMessageAction', (event) => {
+  console.log('Message action:', event.action); // 'opened' or 'unopened'
+  console.log('Message:', event.message);
+  
+  // Update specific message in UI
+  const element = document.querySelector(`[data-queue-id="${event.message.queueId}"]`);
+  if (element) {
+    element.classList.toggle('read', event.action === 'opened');
+    element.classList.toggle('unread', event.action === 'unopened');
+  }
+});
+```
+
+## Message Expiry
+
+Inbox messages automatically respect expiry dates:
+
+```javascript
+const messages = await _cio.getInboxMessages();
+
+// Only non-expired messages are returned
+messages.forEach(message => {
+  if (message.expiry) {
+    const expiryDate = new Date(message.expiry);
+    console.log(`Message expires on: ${expiryDate.toLocaleDateString()}`);
+  }
+});
+```
+
+## Complete Inbox Example
+
+Here's a complete example of an inbox implementation:
+
+```javascript
+class InboxManager {
+  constructor() {
+    this.init();
+  }
+  
+  async init() {
+    // Set up event listeners
+    _cio.events.on('messageInboxUpdated', () => this.refresh());
+    _cio.events.on('inboxMessageAction', (event) => {
+      console.log(`Message ${event.action}:`, event.message.messageId);
+    });
+    
+    // Initial load
+    await this.refresh();
+  }
+  
+  async refresh() {
+    await this.displayMessages();
+    await this.updateBadge();
+  }
+  
+  async displayMessages() {
+    const messages = await _cio.getInboxMessages();
+    const container = document.getElementById('inbox-list');
+    
+    if (messages.length === 0) {
+      container.innerHTML = '<p>No messages</p>';
+      return;
+    }
+    
+    container.innerHTML = messages
+      .sort((a, b) => {
+        // Sort unread first
+        if (a.opened === b.opened) return 0;
+        return a.opened ? 1 : -1;
+      })
+      .map(message => this.renderMessage(message))
+      .join('');
+  }
+  
+  renderMessage(message) {
+    const date = new Date(message.expiry || Date.now());
+    return `
+      <div class="message ${message.opened ? 'read' : 'unread'}" 
+           data-queue-id="${message.queueId}"
+           onclick="inboxManager.openMessage('${message.queueId}', '${message.messageId}')">
+        <div class="message-header">
+          <h4>${message.properties?.title || 'Message'}</h4>
+          ${!message.opened ? '<span class="unread-dot"></span>' : ''}
+        </div>
+        <p>${message.properties?.preview || ''}</p>
+        <small>Expires: ${date.toLocaleDateString()}</small>
+        <button onclick="event.stopPropagation(); inboxManager.removeMessage('${message.queueId}')">Delete</button>
+      </div>
+    `;
+  }
+  
+  async openMessage(queueId, messageId) {
+    // Mark as read
+    await _cio.updateInboxMessageOpenState(queueId, true);
+    
+    // Display the full message
+    await _cio.showMessage({ messageId });
+  }
+  
+  async removeMessage(queueId) {
+    try {
+      await _cio.removeInboxMessage(queueId);
+      console.log('Message removed');
+    } catch (error) {
+      console.error('Failed to remove message:', error);
+    }
+  }
+  
+  async updateBadge() {
+    const count = await _cio.getInboxUnopenedCount();
+    const badge = document.getElementById('inbox-badge');
+    
+    badge.textContent = count;
+    badge.style.display = count > 0 ? 'flex' : 'none';
+  }
+}
+
+// Initialize inbox
+const inboxManager = new InboxManager();
+```
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Cache management">
+    Inbox messages are cached locally for 60 minutes. The SDK automatically handles cache invalidation, but you can force a refresh by listening to the `messageInboxUpdated` event.
+  </Accordion>
+  
+  <Accordion title="Error handling">
+    Always wrap inbox operations in try-catch blocks, as they make network requests that can fail:
+    
+    ```javascript
+    try {
+      await _cio.updateInboxMessageOpenState(queueId, true);
+    } catch (error) {
+      // Show error message to user
+      showNotification('Failed to update message');
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="User experience">
+    - Show a loading state while fetching inbox messages
+    - Provide visual feedback when marking messages as read
+    - Display the unread count prominently
+    - Allow users to filter messages by topics
+    - Show expiry dates for time-sensitive messages
+  </Accordion>
+</AccordionGroup>
+
+<Card title="Next Steps" icon="arrow-right" href="/guides/event-handling">
+  Learn how to listen to inbox and message events
+</Card>

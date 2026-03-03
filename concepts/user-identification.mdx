@@ -1,0 +1,179 @@
+---
+title: "User Identification"
+description: "Learn how to identify users with tokens and manage anonymous sessions"
+---
+
+## Overview
+
+The Gist Web SDK uses user tokens to identify users and deliver personalized in-app messages. The SDK supports both identified users (with explicit tokens) and anonymous users (with automatically generated guest tokens).
+
+## User Tokens
+
+User tokens uniquely identify users in the Customer.io system. Set a user token after initializing the SDK:
+
+```javascript
+import Gist from '@customerio/gist-web';
+
+await Gist.setup({
+  siteId: 'your-site-id',
+  dataCenter: 'US'
+});
+
+// Identify the user
+await Gist.setUserToken('user-123');
+```
+
+<Note>
+The `setUserToken()` method is asynchronous. The SDK will reconnect to the message queue with the new user identity.
+</Note>
+
+### Token Expiration
+
+By default, user tokens expire after 30 days. You can specify a custom expiration date:
+
+```javascript
+const expiryDate = new Date();
+expiryDate.setDate(expiryDate.getDate() + 90); // 90 days from now
+
+await Gist.setUserToken('user-123', expiryDate);
+```
+
+Tokens are stored in local storage with the expiration date. The SDK automatically clears expired tokens on initialization.
+
+### Clearing User Tokens
+
+When a user logs out, clear their token:
+
+```javascript
+await Gist.clearUserToken();
+```
+
+If anonymous sessions are enabled, the SDK will automatically generate a new guest token after clearing the user token.
+
+Source: `src/managers/user-manager.ts:23-36, 78-81`
+
+## Anonymous Sessions
+
+Anonymous sessions allow the SDK to deliver messages to users who haven't been explicitly identified. Enable anonymous sessions during initialization:
+
+```javascript
+await Gist.setup({
+  siteId: 'your-site-id',
+  dataCenter: 'US',
+  useAnonymousSession: true
+});
+```
+
+### How Anonymous Sessions Work
+
+1. When `useAnonymousSession` is enabled and no user token exists, the SDK generates a UUID as a guest user token
+2. The guest token is stored in local storage and persists across sessions
+3. When you call `setUserToken()`, the SDK transitions from the guest session to the identified user session
+4. When you call `clearUserToken()`, the SDK returns to the guest session
+
+```javascript
+// User visits site - SDK generates guest token automatically
+// Guest token: "550e8400-e29b-41d4-a716-446655440000"
+
+// User logs in
+await Gist.setUserToken('user-123');
+// Now using identified session
+
+// User logs out
+await Gist.clearUserToken();
+// Returns to guest token: "550e8400-e29b-41d4-a716-446655440000"
+```
+
+Source: `src/managers/user-manager.ts:38-56`
+
+### Guest Session Behavior
+
+Guest sessions follow these rules:
+
+- **Never override existing sessions**: Guest tokens are only generated when no user token exists
+- **Persistent across visits**: The same guest token is reused until cleared from local storage
+- **Transition seamlessly**: When you set a user token, the SDK immediately switches to the identified session
+
+<Tip>
+Use anonymous sessions to engage users before they sign up or log in. This is particularly useful for onboarding flows and promotional messages.
+</Tip>
+
+## Checking User State
+
+The SDK provides utility functions to check the current user state:
+
+```typescript
+import { isAnonymousUser, getUserToken } from '@customerio/gist-web';
+
+// Check if using a guest token
+const isGuest = isAnonymousUser(); // boolean
+
+// Get the current token (guest or identified)
+const token = getUserToken(); // string | null
+```
+
+Source: `src/managers/user-manager.ts:15-21, 58-60`
+
+## Token Storage
+
+User tokens are stored in browser local storage under these keys:
+
+- `gist.web.userToken`: The current user token (guest or identified)
+- `gist.web.guestUserToken`: The guest token (persists even when using an identified session)
+- `gist.web.usingGuestUserToken`: Flag indicating whether the current token is a guest token
+
+The SDK automatically manages these storage keys. You don't need to interact with them directly.
+
+<Warning>
+Tokens are stored in plain text in local storage. Don't use sensitive data as user tokens.
+</Warning>
+
+## Session Transitions
+
+When you change user tokens, the SDK:
+
+1. Updates the token in local storage
+2. Clears the message queue timing to fetch new messages immediately
+3. Stops the existing Server-Sent Events (SSE) listener
+4. Restarts the queue listener with the new user identity
+5. Fetches and displays messages for the new user
+
+Source: `src/gist.js:113-118, 136-144`
+
+## Preview Sessions
+
+During preview mode (when testing messages in the Customer.io dashboard), user identification is disabled. Calls to `setUserToken()` and `clearUserToken()` are ignored to preserve the preview session.
+
+```javascript
+// In preview mode, these calls do nothing
+await Gist.setUserToken('user-123'); // Ignored
+await Gist.clearUserToken(); // Ignored
+```
+
+Source: `src/gist.js:114, 137`
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Set user tokens early">
+    Call `setUserToken()` as soon as you know the user's identity, typically right after initialization or after login.
+  </Accordion>
+
+  <Accordion title="Clear tokens on logout">
+    Always call `clearUserToken()` when users log out to prevent showing their messages to other users.
+  </Accordion>
+
+  <Accordion title="Use anonymous sessions for pre-login engagement">
+    Enable anonymous sessions to engage users before they create accounts or log in.
+  </Accordion>
+
+  <Accordion title="Handle token expiration">
+    Set appropriate expiration dates based on your session management strategy. Short-lived sessions (7 days) are more secure, while long-lived sessions (90 days) reduce re-identification needs.
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+- Learn about [message delivery](/concepts/messages)
+- Set up [routing rules](/concepts/routing) to target messages by page
+- Explore the [setUserToken API reference](/api/set-user-token)

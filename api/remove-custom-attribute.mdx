@@ -1,0 +1,133 @@
+---
+title: "removeCustomAttribute"
+description: "Remove a custom attribute for the current user"
+---
+
+Removes a specific custom attribute that was previously set. The attribute is deleted from local storage.
+
+## Method Signature
+
+```javascript
+Gist.removeCustomAttribute(key)
+```
+
+## Parameters
+
+<ParamField path="key" type="string" required>
+  The key of the attribute to remove. Must be a non-empty string.
+</ParamField>
+
+## Returns
+
+<ResponseField name="boolean" type="boolean">
+  Returns `true` if the attribute existed and was removed, `false` if the key is invalid or the attribute did not exist
+</ResponseField>
+
+## Example Usage
+
+```javascript
+// Remove a single attribute
+const removed = Gist.removeCustomAttribute('plan');
+console.log(removed); // true if attribute existed, false otherwise
+```
+
+```javascript
+// Set and then remove an attribute
+Gist.setCustomAttribute('tempData', 'temporary value');
+Gist.removeCustomAttribute('tempData');
+```
+
+```javascript
+// Remove user preference
+const clearUserPreference = (preferenceKey) => {
+  const success = Gist.removeCustomAttribute(preferenceKey);
+  if (success) {
+    console.log(`Preference ${preferenceKey} removed`);
+  } else {
+    console.log(`Preference ${preferenceKey} not found`);
+  }
+};
+
+clearUserPreference('theme');
+```
+
+```javascript
+// Conditionally remove attributes
+const cleanupUserData = () => {
+  const attributesToRemove = ['tempToken', 'sessionData', 'cache'];
+  
+  attributesToRemove.forEach(key => {
+    const removed = Gist.removeCustomAttribute(key);
+    console.log(`${key}: ${removed ? 'removed' : 'not found'}`);
+  });
+};
+```
+
+## Validation
+
+```javascript
+// Invalid key - returns false
+const result1 = Gist.removeCustomAttribute('');
+console.log(result1); // false
+
+const result2 = Gist.removeCustomAttribute(null);
+console.log(result2); // false
+
+// Valid key but attribute doesn't exist - returns false
+const result3 = Gist.removeCustomAttribute('nonexistent');
+console.log(result3); // false
+
+// Valid key and attribute exists - returns true
+Gist.setCustomAttribute('temp', 'value');
+const result4 = Gist.removeCustomAttribute('temp');
+console.log(result4); // true
+```
+
+## Notes
+
+- Returns `true` if the attribute existed and was successfully removed
+- Returns `false` if the key is invalid (empty or not a string)
+- Returns `false` if the attribute doesn't exist
+- The attribute is permanently deleted from local storage
+- If this is the last remaining attribute, local storage entry is cleared entirely
+- Changes are saved immediately
+
+## Use Cases
+
+**Remove Temporary Data**
+```javascript
+// Clear session-specific attributes
+Gist.removeCustomAttribute('sessionId');
+Gist.removeCustomAttribute('temporaryToken');
+```
+
+**Clean Up After Feature Flag**
+```javascript
+// Remove beta feature flag after general release
+Gist.removeCustomAttribute('betaAccess');
+```
+
+**User Privacy**
+```javascript
+// Remove sensitive data on user request
+const removeSensitiveData = () => {
+  Gist.removeCustomAttribute('phoneNumber');
+  Gist.removeCustomAttribute('address');
+  console.log('Sensitive data removed');
+};
+```
+
+**Reset User Preferences**
+```javascript
+// Remove specific preferences
+const resetThemePreference = () => {
+  if (Gist.removeCustomAttribute('theme')) {
+    console.log('Theme preference reset to default');
+  }
+};
+```
+
+## Related Methods
+
+- [setCustomAttribute](/api/set-custom-attribute) - Set a custom attribute
+- [clearCustomAttributes](/api/clear-custom-attributes) - Remove all custom attributes

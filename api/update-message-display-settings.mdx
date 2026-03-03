@@ -1,0 +1,124 @@
+---
+title: 'updateMessageDisplaySettings'
+description: 'Update display settings for a currently shown message'
+---
+
+## Method Signature
+
+```javascript
+Gist.updateMessageDisplaySettings(
+  instanceId: string,
+  displaySettings: DisplaySettings
+): boolean
+```
+
+Updates the display settings for a currently displayed message. This allows you to dynamically change how a message is presented.
+
+## Parameters
+
+<ParamField path="instanceId" type="string" required>
+  The instance ID of the message to update
+</ParamField>
+
+<ParamField path="displaySettings" type="DisplaySettings" required>
+  The new display settings to apply
+  
+  <Expandable title="properties">
+    <ParamField path="displayType" type="'modal' | 'overlay' | 'inline' | 'tooltip'">
+      The type of display for the message
+    </ParamField>
+    
+    <ParamField path="modalPosition" type="string">
+      Position for modal display (e.g., "center", "top", "bottom")
+    </ParamField>
+    
+    <ParamField path="overlayPosition" type="string">
+      Position for overlay display
+    </ParamField>
+    
+    <ParamField path="elementSelector" type="string">
+      CSS selector for the target element (used with tooltips and inline messages)
+    </ParamField>
+    
+    <ParamField path="maxWidth" type="number">
+      Maximum width of the message in pixels
+    </ParamField>
+    
+    <ParamField path="overlayColor" type="string">
+      Background color for overlay (e.g., "rgba(0, 0, 0, 0.5)")
+    </ParamField>
+    
+    <ParamField path="dismissOutsideClick" type="boolean">
+      Whether clicking outside the message should dismiss it
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+## Returns
+
+<ResponseField name="success" type="boolean">
+  Returns `true` if the display settings were updated successfully, `false` if the message was not found
+</ResponseField>
+
+## Example
+
+```javascript
+import Gist from '@customer.io/gist-web';
+
+// Show a message
+const instanceId = await Gist.showMessage({
+  messageId: 'msg_123'
+});
+
+if (instanceId) {
+  // Update its display settings
+  const updated = Gist.updateMessageDisplaySettings(instanceId, {
+    displayType: 'modal',
+    modalPosition: 'center',
+    maxWidth: 600,
+    overlayColor: 'rgba(0, 0, 0, 0.7)',
+    dismissOutsideClick: true
+  });
+  
+  if (updated) {
+    console.log('Display settings updated successfully');
+  }
+}
+```
+
+```javascript
+// Change message to tooltip on mobile
+const instanceId = await Gist.showMessage({
+  messageId: 'feature_highlight'
+});
+
+if (window.innerWidth < 768) {
+  Gist.updateMessageDisplaySettings(instanceId, {
+    displayType: 'tooltip',
+    elementSelector: '#feature-button',
+    maxWidth: 300
+  });
+}
+```
+
+## Example from Source
+
+```javascript
+static updateMessageDisplaySettings(instanceId, displaySettings) {
+  var message = fetchMessageByInstanceId(instanceId);
+  if (message) {
+    message.displaySettings = displaySettings;
+    sendDisplaySettingsToIframe(message);
+    return true;
+  }
+  return false;
+}
+```
+
+## Notes
+
+- This method returns `false` if no message with the given instance ID is found.
+- The display settings are sent to the message iframe and applied immediately.
+- Changes to display settings don't trigger a full message reload unless required by the display type change.
+- This is useful for responsive behavior or user preference changes.
+- The message instance must be currently active for settings to be updated.

@@ -1,0 +1,75 @@
+---
+title: 'dismissMessage'
+description: 'Dismiss a currently displayed message'
+---
+
+## Method Signature
+
+```javascript
+Gist.dismissMessage(instanceId: string): Promise<void>
+```
+
+Dismisses a currently displayed message by its instance ID. This removes the message from view and cleans up its state.
+
+## Parameters
+
+<ParamField path="instanceId" type="string" required>
+  The instance ID of the message to dismiss. This is returned by [showMessage](/api/show-message) or [embedMessage](/api/embed-message).
+</ParamField>
+
+## Returns
+
+<ResponseField name="Promise<void>" type="Promise<void>">
+  Resolves when the message is dismissed and the message queue has been checked for new messages
+</ResponseField>
+
+## Example
+
+```javascript
+import Gist from '@customer.io/gist-web';
+
+// Show a message and store its instance ID
+const instanceId = await Gist.showMessage({
+  messageId: 'msg_123'
+});
+
+// Later, dismiss the message programmatically
+if (instanceId) {
+  await Gist.dismissMessage(instanceId);
+}
+```
+
+```javascript
+// Dismiss a message after a timeout
+const instanceId = await Gist.showMessage({
+  messageId: 'welcome_banner'
+});
+
+if (instanceId) {
+  // Auto-dismiss after 10 seconds
+  setTimeout(async () => {
+    await Gist.dismissMessage(instanceId);
+  }, 10000);
+}
+```
+
+## Example from Source
+
+```javascript
+static async dismissMessage(instanceId) {
+  var message = fetchMessageByInstanceId(instanceId);
+  await hideMessage(message);
+  await removePersistentMessage(message);
+  await logBroadcastDismissedLocally(message);
+  await checkMessageQueue();
+}
+```
+
+## Notes
+
+- If the message is not found, this method will log an error but not throw.
+- For persistent messages, dismissing will log a view event and clear the message state from local storage.
+- For broadcast messages, dismissing will mark the broadcast as dismissed locally to prevent it from showing again.
+- The SDK triggers a `messageDismissed` event when the message is dismissed.
+- After dismissing, the SDK checks the message queue to see if another message should be displayed.
+- Both overlay and embedded messages can be dismissed using this method.

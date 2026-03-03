@@ -1,0 +1,147 @@
+---
+title: messageDismissed
+description: Event triggered when a message is dismissed by the user or programmatically
+---
+
+The `messageDismissed` event is dispatched when a Gist message is closed or dismissed, either by user action or programmatically through the SDK.
+
+## Event Name
+
+`messageDismissed`
+
+## When Triggered
+
+This event is triggered when:
+- A user clicks the close button on a message
+- A user dismisses a message by clicking outside (if `dismissOutsideClick` is enabled)
+- `Gist.dismissMessage()` is called programmatically
+- A message is automatically dismissed due to its configuration
+
+## Event Payload
+
+The event payload contains the message object with the following structure:
+
+<ResponseField name="messageId" type="string" required>
+  The unique identifier for the message template
+</ResponseField>
+
+<ResponseField name="queueId" type="string">
+  The queue identifier if this message was delivered via the message queue
+</ResponseField>
+
+<ResponseField name="instanceId" type="string">
+  The unique instance identifier for this specific message rendering
+</ResponseField>
+
+<ResponseField name="overlay" type="boolean">
+  Whether the message was displayed as an overlay
+</ResponseField>
+
+<ResponseField name="elementId" type="string | null">
+  The DOM element ID where the message was embedded (for embedded messages)
+</ResponseField>
+
+<ResponseField name="currentRoute" type="string">
+  The route where the message was dismissed
+</ResponseField>
+
+<ResponseField name="position" type="string | null">
+  The position of the message on the screen
+</ResponseField>
+
+<ResponseField name="displaySettings" type="DisplaySettings">
+  Display configuration for the message
+  
+  <Expandable title="properties">
+    <ResponseField name="displayType" type="'modal' | 'overlay' | 'inline' | 'tooltip'">
+      The type of display for the message
+    </ResponseField>
+    
+    <ResponseField name="dismissOutsideClick" type="boolean">
+      Whether clicking outside dismisses the message
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="properties" type="MessageProperties">
+  Custom properties associated with the message
+</ResponseField>
+
+## Listening to the Event
+
+Use the `Gist.events.on()` method to listen for this event:
+
+```javascript
+Gist.events.on('messageDismissed', (message) => {
+  console.log('Message dismissed:', message);
+});
+```
+
+## Example
+
+```javascript
+// Track message dismissals and clean up
+Gist.events.on('messageDismissed', (message) => {
+  // Send analytics event
+  analytics.track('Gist Message Dismissed', {
+    messageId: message.messageId,
+    instanceId: message.instanceId,
+    route: message.currentRoute
+  });
+  
+  // Perform cleanup if needed
+  if (message.elementId) {
+    console.log(`Embedded message removed from ${message.elementId}`);
+  }
+});
+
+// Programmatically dismiss a message
+const instanceId = await Gist.showMessage({
+  messageId: 'welcome-message'
+});
+
+// Later, dismiss the message
+await Gist.dismissMessage(instanceId);
+```
+
+## Dismiss Message Programmatically
+
+You can dismiss a message using its instance ID:
+
+```javascript
+// Show a message and get its instance ID
+const instanceId = await Gist.showMessage({
+  messageId: 'my-message'
+});
+
+// Listen for dismissal
+Gist.events.on('messageDismissed', (message) => {
+  if (message.instanceId === instanceId) {
+    console.log('My message was dismissed');
+  }
+});
+
+// Dismiss after 5 seconds
+setTimeout(async () => {
+  await Gist.dismissMessage(instanceId);
+}, 5000);
+```
+
+## Remove Event Listener
+
+To remove an event listener, use `Gist.events.off()`:
+
+```javascript
+const handler = (message) => {
+  console.log('Message dismissed:', message);
+};
+
+// Add listener
+Gist.events.on('messageDismissed', handler);
+
+// Remove specific listener
+Gist.events.off('messageDismissed', handler);
+
+// Remove all listeners for this event
+Gist.events.off('messageDismissed');
+```

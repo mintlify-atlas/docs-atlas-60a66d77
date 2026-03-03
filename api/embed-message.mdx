@@ -1,0 +1,99 @@
+---
+title: 'embedMessage'
+description: 'Embed a message into a specific DOM element'
+---
+
+## Method Signature
+
+```javascript
+Gist.embedMessage(message: GistMessage, elementId: string): Promise<string | null>
+```
+
+Embeds a message inline within a specific DOM element in your application.
+
+## Parameters
+
+<ParamField path="message" type="GistMessage" required>
+  The message object to embed
+  
+  <Expandable title="properties">
+    <ParamField path="messageId" type="string" required>
+      The unique ID of the message to embed
+    </ParamField>
+    
+    <ParamField path="queueId" type="string">
+      Optional queue ID for tracking message state
+    </ParamField>
+    
+    <ParamField path="properties" type="object">
+      Additional properties for the message
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField path="elementId" type="string" required>
+  The ID of the DOM element where the message should be embedded (e.g., "my-container")
+</ParamField>
+
+## Returns
+
+<ResponseField name="instanceId" type="string | null">
+  Returns the instance ID of the embedded message, or `null` if the message could not be embedded
+</ResponseField>
+
+## Example
+
+```javascript
+import Gist from '@customer.io/gist-web';
+
+// HTML: <div id="banner-container"></div>
+
+// Embed a message into the container
+const instanceId = await Gist.embedMessage(
+  { messageId: 'msg_123' },
+  'banner-container'
+);
+
+if (instanceId) {
+  console.log('Message embedded with instance ID:', instanceId);
+}
+```
+
+```html
+<!-- HTML structure -->
+<div id="promo-banner"></div>
+
+<script>
+  // Embed promotional message
+  await Gist.embedMessage(
+    {
+      messageId: 'promo_summer_sale',
+      properties: {
+        discount: '20%',
+        expiresAt: '2024-08-31'
+      }
+    },
+    'promo-banner'
+  );
+</script>
+```
+
+## Example from Source
+
+```javascript
+static async embedMessage(message, elementId) {
+  var messageResponse = embedMessage(message, elementId);
+  return messageResponse ? messageResponse.instanceId : null;
+}
+```
+
+## Notes
+
+- The target DOM element must exist before calling this method.
+- Multiple embedded messages can be displayed simultaneously in different elements.
+- If the specified `elementId` already contains a message, this method returns `null`.
+- If a message with the same `queueId` is already showing, this method returns `null`.
+- Messages are only embedded when the document is visible.
+- Embedded messages automatically resize based on their content unless the container has a fixed height.
+- The message will automatically log a view event when displayed (unless it's a persistent message).
+- The SDK triggers a `messageShown` event when the message is successfully embedded.

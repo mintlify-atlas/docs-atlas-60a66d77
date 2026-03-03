@@ -1,0 +1,65 @@
+---
+title: 'setCurrentRoute'
+description: 'Set the current route for message targeting'
+---
+
+## Method Signature
+
+```javascript
+Gist.setCurrentRoute(route: string): Promise<void>
+```
+
+Sets the current route/path of your application. This is used to determine which messages should be displayed based on route rules configured in Customer.io.
+
+## Parameters
+
+<ParamField path="route" type="string" required>
+  The current route or path in your application (e.g., "/dashboard", "/products/123")
+</ParamField>
+
+## Returns
+
+<ResponseField name="Promise<void>" type="Promise<void>">
+  Resolves when the route is set and message queue has been checked
+</ResponseField>
+
+## Example
+
+```javascript
+import Gist from '@customer.io/gist-web';
+
+// In a single-page application, call this when the route changes
+await Gist.setCurrentRoute('/dashboard');
+
+// Example with React Router
+import { useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
+
+function App() {
+  const location = useLocation();
+  
+  useEffect(() => {
+    Gist.setCurrentRoute(location.pathname);
+  }, [location]);
+  
+  // ...
+}
+```
+
+## Example from Source
+
+```javascript
+static async setCurrentRoute(route) {
+  this.currentRoute = route;
+  log(`Current route set to: ${route}`);
+  await checkCurrentMessagesAfterRouteChange();
+  await checkMessageQueue();
+}
+```
+
+## Notes
+
+- Call this method whenever your application's route changes in single-page applications.
+- The SDK will check currently displayed messages to ensure they should still be shown on the new route.
+- After updating the route, the SDK automatically checks the message queue for new messages to display.
+- Messages with route rules that don't match the current route will not be displayed.

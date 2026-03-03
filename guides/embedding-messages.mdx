@@ -1,0 +1,273 @@
+---
+title: Embedding Messages
+description: Display in-app messages inline within your page layout
+---
+
+The Gist Web SDK allows you to embed messages directly into your page layout as inline elements, rather than displaying them as modal overlays. This is perfect for creating persistent announcements, inline help content, or contextual messages.
+
+## How Embedded Messages Work
+
+Embedded messages are rendered inside a specific HTML element on your page. Unlike overlay messages, they:
+
+- Become part of your page's layout
+- Don't block other content
+- Can be placed anywhere in your HTML
+- Multiple embedded messages can be displayed simultaneously
+- Automatically resize based on content (unless the container has a fixed height)
+
+## Basic Usage
+
+<Steps>
+  <Step title="Create a container element">
+    Add a container element to your HTML where you want the message to appear:
+    
+    ```html
+    <div id="announcement-banner"></div>
+    ```
+  </Step>
+  
+  <Step title="Embed the message">
+    Use `embedMessage()` to render the message in the container:
+    
+    ```javascript
+    const instanceId = await _cio.embedMessage(
+      {
+        messageId: 'your-message-id',
+        properties: {
+          // Optional: custom properties
+          productName: 'Premium Plan'
+        }
+      },
+      'announcement-banner' // The element ID
+    );
+    ```
+  </Step>
+</Steps>
+
+### Method Signature
+
+```javascript
+embedMessage(message, elementId)
+```
+
+<ParamField path="message" type="object" required>
+  The message object containing `messageId` and optional `properties`
+</ParamField>
+
+<ParamField path="elementId" type="string" required>
+  The ID of the HTML element where the message should be embedded
+</ParamField>
+
+<ParamField path="returns" type="string | null">
+  Returns the instance ID of the embedded message, or `null` if it couldn't be displayed
+</ParamField>
+
+## Common Use Cases
+
+### Announcement Banner
+
+Display a persistent announcement at the top of your page:
+
+```html
+<!-- In your HTML -->
+<header>
+  <div id="top-banner"></div>
+  <nav><!-- Your navigation --></nav>
+</header>
+```
+
+```javascript
+// Embed announcement message
+await _cio.embedMessage(
+  {
+    messageId: 'new-feature-announcement',
+    properties: {
+      featureName: 'Dark Mode',
+      releaseDate: 'March 15, 2024'
+    }
+  },
+  'top-banner'
+);
+```
+
+### Sidebar Help Widget
+
+Add contextual help content in a sidebar:
+
+```html
+<div class="page-layout">
+  <aside class="sidebar">
+    <div id="help-widget"></div>
+  </aside>
+  <main><!-- Your main content --></main>
+</div>
+```
+
+```javascript
+await _cio.embedMessage(
+  {
+    messageId: 'contextual-help',
+    properties: {
+      section: 'dashboard'
+    }
+  },
+  'help-widget'
+);
+```
+
+### Inline Promotion
+
+Embed promotional content within your page flow:
+
+```html
+<div class="content">
+  <section id="products"><!-- Product list --></section>
+  
+  <div id="promo-section"></div>
+  
+  <section id="reviews"><!-- Reviews --></section>
+</div>
+```
+
+```javascript
+await _cio.embedMessage(
+  {
+    messageId: 'spring-sale-promo',
+    properties: {
+      discount: '25%',
+      expiresIn: '3 days'
+    }
+  },
+  'promo-section'
+);
+```
+
+## Predefined Positions
+
+The SDK supports special position identifiers for common placements. When using these, the SDK automatically creates the container element:
+
+```javascript
+// These positions are automatically managed by the SDK
+await _cio.embedMessage(
+  { messageId: 'footer-message' },
+  'top'     // Top of the page
+);
+
+await _cio.embedMessage(
+  { messageId: 'footer-message' },
+  'bottom'  // Bottom of the page
+);
+
+await _cio.embedMessage(
+  { messageId: 'footer-message' },
+  'center'  // Center of the page
+);
+```
+
+## Dynamic Embedding
+
+You can embed messages dynamically based on user interactions or page state:
+
+```javascript
+// Embed help message when user clicks help button
+document.getElementById('help-btn').addEventListener('click', async () => {
+  const helpContainer = document.getElementById('help-container');
+  
+  if (helpContainer.innerHTML === '') {
+    await _cio.embedMessage(
+      {
+        messageId: 'inline-help',
+        properties: {
+          topic: 'getting-started'
+        }
+      },
+      'help-container'
+    );
+  }
+});
+```
+
+## Embedding Multiple Messages
+
+You can embed multiple messages on the same page in different containers:
+
+```javascript
+// Top banner
+await _cio.embedMessage(
+  { messageId: 'announcement' },
+  'top-banner'
+);
+
+// Sidebar widget
+await _cio.embedMessage(
+  { messageId: 'tips' },
+  'sidebar-tips'
+);
+
+// Footer promotion
+await _cio.embedMessage(
+  { messageId: 'newsletter' },
+  'footer-newsletter'
+);
+```
+
+## Height Management
+
+The SDK automatically handles height based on your container:
+
+- **No height set**: The container automatically resizes to fit the message content
+- **Fixed height**: The message renders within the fixed height (scrollable if needed)
+
+```css
+/* Auto-resize container */
+#banner {
+  width: 100%;
+  /* No height specified */
+}
+
+/* Fixed height container */
+#sidebar-widget {
+  width: 300px;
+  height: 400px; /* Message will fit within this height */
+  overflow: auto;
+}
+```
+
+## Error Handling
+
+```javascript
+const instanceId = await _cio.embedMessage(
+  { messageId: 'my-message' },
+  'container-id'
+);
+
+if (instanceId) {
+  console.log('Message embedded successfully:', instanceId);
+} else {
+  console.log('Failed to embed message');
+  // Possible reasons:
+  // - Message with same queueId is already showing
+  // - Element ID already has a message
+  // - Document is hidden
+}
+```
+
+## Removing Embedded Messages
+
+Embedded messages are automatically removed when dismissed by the user. To programmatically remove an embedded message:
+
+```javascript
+const instanceId = await _cio.embedMessage(
+  { messageId: 'temporary-message' },
+  'temp-container'
+);
+
+// Remove after 5 seconds
+setTimeout(async () => {
+  await _cio.dismissMessage(instanceId);
+}, 5000);
+```
+
+<Card title="Next Steps" icon="arrow-right" href="/guides/displaying-messages">
+  Learn about displaying messages as modal overlays
+</Card>

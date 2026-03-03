@@ -1,0 +1,210 @@
+---
+title: "Localization"
+description: "Configure user locale for localized in-app messages"
+---
+
+## Overview
+
+The Gist Web SDK supports localization by allowing you to set and persist a user's locale preference. This locale is used when fetching messages, enabling you to deliver localized content to your users.
+
+## Setting User Locale
+
+Use the `setUserLocale()` method to set the user's preferred language:
+
+```javascript
+import Gist from '@customer.io/gist-web';
+
+await Gist.setup({
+  siteId: 'your-site-id',
+  dataCenter: 'US'
+});
+
+// Set locale to Spanish (Spain)
+Gist.setUserLocale('es-ES');
+
+// Set locale to French (France)
+Gist.setUserLocale('fr-FR');
+
+// Set locale to Japanese
+Gist.setUserLocale('ja-JP');
+```
+
+## Locale Format
+
+The locale should be a valid BCP 47 language tag (e.g., `en-US`, `fr-FR`, `ja-JP`):
+
+- `en-US` - English (United States)
+- `en-GB` - English (United Kingdom)
+- `es-ES` - Spanish (Spain)
+- `es-MX` - Spanish (Mexico)
+- `fr-FR` - French (France)
+- `de-DE` - German (Germany)
+- `ja-JP` - Japanese (Japan)
+- `zh-CN` - Chinese (Simplified, China)
+
+## Default Behavior
+
+If you don't explicitly set a locale, the SDK uses the browser's language setting:
+
+```javascript
+// If no locale is set, the SDK uses navigator.language
+const locale = navigator.language; // e.g., 'en-US'
+```
+
+## Persistence
+
+<Info>
+The user's locale preference is automatically persisted to `localStorage` and will be remembered across browser sessions.
+</Info>
+
+The locale is stored with the key `gist.web.userLocale` and expires after 365 days.
+
+## Implementation Details
+
+The locale management is handled in `src/managers/locale-manager.ts`:
+
+```javascript
+const userLocaleLocalStoreName = "gist.web.userLocale";
+
+export function setUserLocale(locale: string): void {
+  setKeyToLocalStore(userLocaleLocalStoreName, locale);
+  log(`Set user locate to "${locale}"`);
+}
+
+export function getUserLocale(): string {
+  const stored = getKeyFromLocalStore(userLocaleLocalStoreName);
+  if (stored !== null) {
+    return stored as string;
+  }
+  return navigator.language;
+}
+```
+
+## Common Use Cases
+
+### Setting Locale on Login
+
+Set the user's locale when they log in, based on their profile preference:
+
+```javascript
+async function handleLogin(user) {
+  await Gist.setup({
+    siteId: 'your-site-id',
+    dataCenter: 'US'
+  });
+  
+  // Set user token
+  await Gist.setUserToken(user.id);
+  
+  // Set user's preferred locale from their profile
+  if (user.preferredLocale) {
+    Gist.setUserLocale(user.preferredLocale);
+  }
+}
+```
+
+### Language Selector
+
+Allow users to change their language preference:
+
+```javascript
+function handleLanguageChange(selectedLocale) {
+  // Update locale in Gist
+  Gist.setUserLocale(selectedLocale);
+  
+  // Update your app's locale
+  updateAppLanguage(selectedLocale);
+  
+  // Reload messages with new locale
+  location.reload();
+}
+```
+
+### Detecting Browser Language
+
+Automatically set locale based on browser language on first visit:
+
+```javascript
+await Gist.setup({
+  siteId: 'your-site-id',
+  dataCenter: 'US'
+});
+
+// Check if locale is already set
+const storedLocale = localStorage.getItem('gist.web.userLocale');
+
+if (!storedLocale) {
+  // First visit - use browser language
+  const browserLocale = navigator.language;
+  Gist.setUserLocale(browserLocale);
+  console.log(`Locale set to browser default: ${browserLocale}`);
+}
+```
+
+### Multi-Region Application
+
+Set locale based on the user's selected region:
+
+```javascript
+const regionLocaleMap = {
+  'us': 'en-US',
+  'uk': 'en-GB',
+  'spain': 'es-ES',
+  'mexico': 'es-MX',
+  'france': 'fr-FR',
+  'germany': 'de-DE',
+  'japan': 'ja-JP'
+};
+
+function setRegion(region) {
+  const locale = regionLocaleMap[region];
+  if (locale) {
+    Gist.setUserLocale(locale);
+  }
+}
+```
+
+## Message Content Localization
+
+<Warning>
+The SDK only **sends** the locale preference to Customer.io. You must configure localized message content in your Customer.io workspace for different locales.
+</Warning>
+
+To deliver localized messages:
+
+1. Set the user's locale in the SDK using `setUserLocale()`
+2. Create localized versions of your messages in Customer.io
+3. Customer.io will deliver the appropriate message based on the user's locale
+
+## Testing Localization
+
+Test different locales during development:
+
+```javascript
+await Gist.setup({
+  siteId: 'your-site-id',
+  dataCenter: 'US',
+  logging: true // Enable logging to see locale changes
+});
+
+// Test different locales
+const testLocales = ['en-US', 'es-ES', 'fr-FR', 'ja-JP'];
+
+testLocales.forEach(locale => {
+  console.log(`Testing locale: ${locale}`);
+  Gist.setUserLocale(locale);
+  // Reload or fetch messages to see localized content
+});
+```
+
+## Best Practices
+
+1. **Set Early**: Set the locale as early as possible in your application lifecycle
+
+2. **Sync with App**: Keep the Gist locale in sync with your application's language setting
+
+3. **Use Standard Codes**: Always use valid BCP 47 language tags
+
+4. **Handle Fallbacks**: In Customer.io, configure a default/fallback language for unsupported locales
+
+5. **Test All Languages**: Test your messages in all supported locales before deploying

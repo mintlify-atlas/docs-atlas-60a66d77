@@ -1,0 +1,194 @@
+---
+title: messageAction
+description: Event triggered when a user interacts with buttons or links in a message
+---
+
+The `messageAction` event is dispatched when a user clicks on a button or link within a Gist message. This event allows you to track user interactions and respond to specific actions.
+
+## Event Name
+
+`messageAction`
+
+## When Triggered
+
+This event is triggered when:
+- A user clicks a button in the message
+- A user clicks a link in the message
+- Any interactive element in the message is activated
+
+## Event Payload
+
+The event payload is an object containing:
+
+<ResponseField name="message" type="GistMessage" required>
+  The message object where the action occurred
+  
+  <Expandable title="properties">
+    <ResponseField name="messageId" type="string" required>
+      The unique identifier for the message template
+    </ResponseField>
+    
+    <ResponseField name="instanceId" type="string">
+      The unique instance identifier for this message rendering
+    </ResponseField>
+    
+    <ResponseField name="queueId" type="string">
+      The queue identifier if delivered via message queue
+    </ResponseField>
+    
+    <ResponseField name="currentRoute" type="string">
+      The route where the action occurred
+    </ResponseField>
+    
+    <ResponseField name="overlay" type="boolean">
+      Whether the message is displayed as an overlay
+    </ResponseField>
+    
+    <ResponseField name="elementId" type="string | null">
+      The DOM element ID where the message is embedded
+    </ResponseField>
+    
+    <ResponseField name="displaySettings" type="DisplaySettings">
+      Display configuration for the message
+    </ResponseField>
+    
+    <ResponseField name="properties" type="MessageProperties">
+      Custom properties associated with the message
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="action" type="string" required>
+  The type of action performed (e.g., 'click', 'submit', 'navigate')
+</ResponseField>
+
+<ResponseField name="name" type="string" required>
+  The name or identifier of the element that was interacted with (e.g., button ID, link text)
+</ResponseField>
+
+## Listening to the Event
+
+Use the `Gist.events.on()` method to listen for this event:
+
+```javascript
+Gist.events.on('messageAction', (payload) => {
+  console.log('Action:', payload.action);
+  console.log('Element:', payload.name);
+  console.log('Message:', payload.message);
+});
+```
+
+## Example
+
+```javascript
+// Track user interactions with message buttons
+Gist.events.on('messageAction', (payload) => {
+  const { message, action, name } = payload;
+  
+  // Send analytics event
+  analytics.track('Gist Message Action', {
+    messageId: message.messageId,
+    instanceId: message.instanceId,
+    action: action,
+    elementName: name,
+    route: message.currentRoute
+  });
+  
+  console.log(`User performed ${action} on ${name} in message ${message.messageId}`);
+  
+  // Handle specific actions
+  if (name === 'get-started-button') {
+    // Navigate to onboarding
+    window.location.href = '/onboarding';
+  } else if (name === 'learn-more-link') {
+    // Open documentation
+    window.open('/docs', '_blank');
+  }
+});
+```
+
+## Advanced Usage
+
+```javascript
+// Handle different action types
+Gist.events.on('messageAction', ({ message, action, name }) => {
+  switch (action) {
+    case 'click':
+      handleButtonClick(message, name);
+      break;
+    case 'submit':
+      handleFormSubmit(message, name);
+      break;
+    case 'navigate':
+      handleNavigation(message, name);
+      break;
+    default:
+      console.log('Unknown action:', action);
+  }
+});
+
+function handleButtonClick(message, buttonName) {
+  console.log(`Button clicked: ${buttonName}`);
+  
+  // Perform action based on button name
+  if (buttonName === 'dismiss') {
+    Gist.dismissMessage(message.instanceId);
+  } else if (buttonName === 'accept-offer') {
+    applyPromoCode();
+    Gist.dismissMessage(message.instanceId);
+  }
+}
+
+function handleFormSubmit(message, formName) {
+  console.log(`Form submitted: ${formName}`);
+  // Process form data
+}
+
+function handleNavigation(message, linkName) {
+  console.log(`Navigation triggered: ${linkName}`);
+  // Track navigation event
+}
+```
+
+## Filter by Message or Action
+
+```javascript
+// Listen only for specific message actions
+Gist.events.on('messageAction', ({ message, action, name }) => {
+  // Only handle actions from welcome message
+  if (message.messageId === 'welcome-message') {
+    if (name === 'start-tour') {
+      startProductTour();
+    } else if (name === 'skip-tour') {
+      Gist.dismissMessage(message.instanceId);
+    }
+  }
+  
+  // Only handle button clicks (ignore other actions)
+  if (action === 'click') {
+    analytics.track('Message Button Clicked', {
+      messageId: message.messageId,
+      buttonName: name
+    });
+  }
+});
+```
+
+## Remove Event Listener
+
+To remove an event listener, use `Gist.events.off()`:
+
+```javascript
+const actionHandler = (payload) => {
+  console.log('Action:', payload.action);
+};
+
+// Add listener
+Gist.events.on('messageAction', actionHandler);
+
+// Remove specific listener
+Gist.events.off('messageAction', actionHandler);
+
+// Remove all listeners for this event
+Gist.events.off('messageAction');
+```

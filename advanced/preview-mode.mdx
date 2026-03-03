@@ -1,0 +1,140 @@
+---
+title: "Preview Mode"
+description: "Test in-app messages during development using preview mode"
+---
+
+## Overview
+
+Preview mode allows you to test in-app messages during development without affecting production data. When enabled, the SDK uses a special user token from the URL and disables session persistence.
+
+## How It Works
+
+The SDK automatically checks for a `cioPreviewId` URL parameter during initialization. When found:
+
+1. Session persistence is disabled (uses `sessionStorage` instead of `localStorage`)
+2. The preview ID is set as the user token
+3. Messages are fetched for that preview user
+4. The session is marked as a preview session
+
+## Enabling Preview Mode
+
+Preview mode is enabled automatically when the SDK detects the `cioPreviewId` parameter in the URL:
+
+```
+https://your-app.com?cioPreviewId=preview_user_123
+```
+
+No additional configuration is required. The SDK will:
+
+```javascript
+import Gist from '@customer.io/gist-web';
+
+// SDK automatically detects preview mode during setup
+await Gist.setup({
+  siteId: 'your-site-id',
+  dataCenter: 'US'
+});
+
+// If cioPreviewId is in URL, preview mode is now active
+```
+
+## Implementation Details
+
+The preview mode setup is handled in `src/utilities/preview-mode.ts`:
+
+```javascript
+export function setupPreview(): boolean {
+  const cioPreviewId = fetchPreviewId();
+  if (cioPreviewId) {
+    shouldPersistSession(false);
+    Gist.setUserToken(cioPreviewId);
+    log(`Preview mode enabled with user token: ${cioPreviewId}`);
+  }
+  return !isSessionBeingPersisted();
+}
+
+function fetchPreviewId(): string | null {
+  const params = new URLSearchParams(window.location.search);
+  return params.get('cioPreviewId');
+}
+```
+
+## Session Persistence
+
+<Warning>
+When preview mode is active, the SDK does **not** persist session data to `localStorage`. All data is stored in `sessionStorage` and will be cleared when the browser tab is closed.
+</Warning>
+
+This ensures that preview sessions don't interfere with your application's normal user sessions.
+
+## Checking Preview Status
+
+You can check if the current session is a preview session:
+
+```javascript
+import Gist from '@customer.io/gist-web';
+
+if (Gist.config.isPreviewSession) {
+  console.log('Running in preview mode');
+}
+```
+
+## Use Cases
+
+### Testing Messages During Development
+
+Use preview mode to test messages without affecting production analytics:
+
+```javascript
+// Development URL with preview ID
+// http://localhost:3000?cioPreviewId=dev_test_user
+
+await Gist.setup({
+  siteId: 'your-site-id',
+  dataCenter: 'US',
+  logging: true // Enable logging to see preview mode activation
+});
+```
+
+### QA Testing
+
+Share preview URLs with your QA team to test specific message scenarios:
+
+```
+https://staging.your-app.com?cioPreviewId=qa_scenario_1
+```
+
+## Limitations
+
+<Info>
+In preview mode, `setUserToken()` and `clearUserToken()` operations are ignored to prevent accidentally changing the preview user.
+</Info>
+
+The following methods will not execute when in preview mode:
+
+- `Gist.setUserToken()` - Returns immediately without changing the user
+- `Gist.clearUserToken()` - Returns immediately without clearing the user
+
+## Best Practices
+
+1. **Enable Logging**: Always enable logging during preview mode to see what's happening:
+   ```javascript
+   await Gist.setup({
+     siteId: 'your-site-id',
+     dataCenter: 'US',
+     logging: true
+   });
+   ```
+
+2. **Use Unique Preview IDs**: Use descriptive preview IDs that identify the test scenario:
+   ```
+   ?cioPreviewId=onboarding_flow_test
+   ?cioPreviewId=premium_user_messages
+   ```
+
+3. **Clear Browser Data**: Between preview sessions, clear your browser's session storage to start fresh:
+   ```javascript
+   sessionStorage.clear();
+   ```
+
+4. **Don't Use in Production**: Preview mode is for testing only. Ensure production URLs don't contain the `cioPreviewId` parameter.

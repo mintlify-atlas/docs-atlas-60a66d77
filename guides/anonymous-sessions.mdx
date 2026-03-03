@@ -1,0 +1,459 @@
+---
+title: Anonymous Sessions
+description: Enable guest sessions for unauthenticated users
+---
+
+The Gist Web SDK supports anonymous sessions, allowing you to deliver in-app messages to users before they create an account or log in. This is perfect for onboarding flows, promotional content, and lead generation.
+
+## Overview
+
+Anonymous sessions (also called guest sessions):
+
+- Generate a unique identifier for unauthenticated users
+- Allow messages to be delivered before user registration
+- Automatically transition to authenticated sessions on login
+- Persist across page reloads using local storage
+- Never override existing authenticated user sessions
+
+## Enabling Anonymous Sessions
+
+### During SDK Setup
+
+Enable anonymous sessions when initializing the SDK:
+
+```javascript
+await _cio.setup({
+  siteId: 'your-site-id',
+  dataCenter: 'US',
+  useAnonymousSession: true  // Enable guest sessions
+});
+```
+
+When enabled, the SDK automatically creates a guest user token if no authenticated user token exists.
+
+### Configuration Options
+
+<ParamField path="useAnonymousSession" type="boolean" default="false">
+  Set to `true` to automatically create guest sessions for unauthenticated users
+</ParamField>
+
+## How It Works
+
+<Steps>
+  <Step title="User visits your site">
+    When a user visits your site without an existing session, the SDK checks for an authenticated user token.
+  </Step>
+  
+  <Step title="Guest token is generated">
+    If no authenticated token exists and `useAnonymousSession: true`, the SDK generates a unique guest token using UUID v4:
+    
+    ```javascript
+    // Example guest token
+    "a3e7b1c4-5d6f-4e8a-9b0c-1d2e3f4g5h6i"
+    ```
+  </Step>
+  
+  <Step title="Messages are delivered">
+    The guest token is used to fetch and display messages targeted at anonymous users.
+  </Step>
+  
+  <Step title="Transition to authenticated session">
+    When the user logs in, calling `setUserToken()` automatically:
+    - Clears the guest session flag
+    - Replaces the guest token with the authenticated user token
+    - Triggers an immediate queue check for user-specific messages
+  </Step>
+</Steps>
+
+## Using Guest Sessions
+
+### Manual Activation
+
+You can manually activate a guest session even if not enabled during setup:
+
+```javascript
+// Manually start a guest session
+_cio.useGuestSession();
+```
+
+<Note>
+  `useGuestSession()` will never override an existing authenticated user session. It only creates a guest session if no user token exists.
+</Note>
+
+### Checking Session Type
+
+You can check if the current session is a guest session:
+
+```javascript
+// Check if using guest session
+if (_cio.isAnonymousUser && _cio.isAnonymousUser()) {
+  console.log('User is in a guest session');
+  // Show registration prompt
+} else {
+  console.log('User is authenticated');
+}
+```
+
+## Session Lifecycle
+
+### Initial Anonymous Visit
+
+```javascript
+// Setup with anonymous sessions enabled
+await _cio.setup({
+  siteId: 'your-site-id',
+  dataCenter: 'US',
+  useAnonymousSession: true
+});
+
+// Guest token is automatically created
+// Messages can now be delivered to the anonymous user
+
+// Show onboarding message to anonymous visitor
+await _cio.showMessage({
+  messageId: 'anonymous-welcome'
+});
+```
+
+### User Registration
+
+When a user registers or logs in, transition to an authenticated session:
+
+```javascript
+function handleUserLogin(userId) {
+  // Set the authenticated user token
+  _cio.setUserToken(userId);
+  
+  // The SDK automatically:
+  // 1. Clears the guest session flag
+  // 2. Replaces guest token with authenticated token
+  // 3. Checks queue for user-specific messages
+  
+  console.log('Transitioned from guest to authenticated session');
+}
+
+// After login
+handleUserLogin('user-123');
+
+// Now show authenticated user messages
+await _cio.showMessage({
+  messageId: 'welcome-back'
+});
+```
+
+### User Logout
+
+When a user logs out, you can choose to return to a guest session:
+
+```javascript
+function handleUserLogout() {
+  // Clear the authenticated session
+  _cio.clearUserToken();
+  
+  // If anonymous sessions are enabled, SDK automatically
+  // creates a new guest session
+  
+  console.log('Returned to guest session');
+}
+```
+
+## Common Use Cases
+
+### Onboarding Flow for Anonymous Users
+
+Show onboarding messages to visitors before they sign up:
+
+```javascript
+// Setup with anonymous sessions
+await _cio.setup({
+  siteId: 'your-site-id',
+  dataCenter: 'US',
+  useAnonymousSession: true
+});
+
+// Show feature highlights to anonymous visitors
+setTimeout(async () => {
+  await _cio.showMessage({
+    messageId: 'feature-highlights',
+    properties: {
+      step: 1
+    }
+  });
+}, 3000); // After 3 seconds
+
+// Prompt registration after showing value
+setTimeout(async () => {
+  await _cio.showMessage({
+    messageId: 'registration-prompt',
+    properties: {
+      benefit: 'Save your progress'
+    }
+  });
+}, 30000); // After 30 seconds
+```
+
+### Lead Capture Campaign
+
+```javascript
+// Track anonymous user behavior
+let pagesViewed = 0;
+
+document.addEventListener('DOMContentLoaded', () => {
+  pagesViewed++;
+  _cio.setCustomAttribute('anonymousPagesViewed', pagesViewed);
+  
+  // Show lead capture after 3 pages
+  if (pagesViewed === 3) {
+    _cio.showMessage({
+      messageId: 'email-capture',
+      properties: {
+        incentive: 'Get 10% off your first order'
+      }
+    });
+  }
+});
+```
+
+### E-commerce Cart Abandonment
+
+Track anonymous cart activity:
+
+```javascript
+// Setup anonymous session
+await _cio.setup({
+  siteId: 'your-site-id',
+  dataCenter: 'US',
+  useAnonymousSession: true
+});
+
+// Track cart items for anonymous users
+function addToCart(product) {
+  const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+  cart.push(product);
+  localStorage.setItem('cart', JSON.stringify(cart));
+  
+  // Update custom attributes
+  _cio.setCustomAttribute('cartItems', cart.length);
+  _cio.setCustomAttribute('cartValue', calculateCartTotal(cart));
+  
+  // Show registration prompt for high-value carts
+  if (calculateCartTotal(cart) > 100) {
+    _cio.showMessage({
+      messageId: 'register-to-save-cart',
+      properties: {
+        cartValue: calculateCartTotal(cart)
+      }
+    });
+  }
+}
+```
+
+### Progressive Engagement
+
+Gradually introduce features to anonymous users:
+
+```javascript
+class AnonymousEngagement {
+  constructor() {
+    this.engagementLevel = 0;
+    this.init();
+  }
+  
+  async init() {
+    // Track engagement
+    this.trackScrollDepth();
+    this.trackTimeOnSite();
+    this.trackInteractions();
+  }
+  
+  trackScrollDepth() {
+    let maxScroll = 0;
+    window.addEventListener('scroll', () => {
+      const scrollPercent = (window.scrollY / document.body.scrollHeight) * 100;
+      if (scrollPercent > maxScroll) {
+        maxScroll = scrollPercent;
+        _cio.setCustomAttribute('maxScrollDepth', maxScroll);
+        
+        // Show message at 50% scroll
+        if (maxScroll > 50 && this.engagementLevel === 0) {
+          this.engagementLevel = 1;
+          _cio.showMessage({ messageId: 'mid-content-cta' });
+        }
+      }
+    });
+  }
+  
+  trackTimeOnSite() {
+    let seconds = 0;
+    setInterval(() => {
+      seconds++;
+      _cio.setCustomAttribute('timeOnSite', seconds);
+      
+      // Show message after 2 minutes
+      if (seconds === 120 && this.engagementLevel < 2) {
+        this.engagementLevel = 2;
+        _cio.showMessage({ messageId: 'engaged-visitor-offer' });
+      }
+    }, 1000);
+  }
+  
+  trackInteractions() {
+    let clicks = 0;
+    document.addEventListener('click', () => {
+      clicks++;
+      _cio.setCustomAttribute('clickCount', clicks);
+      
+      // Show message after 5 interactions
+      if (clicks === 5 && this.engagementLevel < 3) {
+        this.engagementLevel = 3;
+        _cio.showMessage({ messageId: 'highly-engaged-signup' });
+      }
+    });
+  }
+}
+
+new AnonymousEngagement();
+```
+
+## Session Persistence
+
+Guest tokens are stored in local storage and persist across:
+
+- Page reloads
+- Browser restarts (until local storage is cleared)
+- Multiple tabs on the same domain
+
+```javascript
+// Storage keys used for guest sessions
+// 'gist.web.guestUserToken' - The generated UUID
+// 'gist.web.usingGuestUserToken' - Flag indicating guest session
+// 'gist.web.userToken' - Current active token (guest or authenticated)
+```
+
+## Combining with Segment.com
+
+When using Segment.com's Analytics.js, the SDK automatically detects anonymous IDs:
+
+```javascript
+await _cio.setup({
+  siteId: 'your-site-id',
+  dataCenter: 'US',
+  useAnonymousSession: true
+});
+
+// SDK checks for 'ajs_uid' parameter
+// If found, it doesn't create a guest session
+// This allows Segment to manage the anonymous ID
+```
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Don't rely on guest sessions for critical data">
+    Guest sessions can be cleared if users clear their browser data. Use them for:
+    
+    - ✅ Onboarding and education
+    - ✅ Lead capture campaigns
+    - ✅ Progressive engagement
+    - ❌ Critical user data
+    - ❌ Transaction history
+    - ❌ Sensitive information
+  </Accordion>
+  
+  <Accordion title="Transition smoothly to authenticated sessions">
+    ```javascript
+    async function handleUserRegistration(userData) {
+      // 1. Create user account
+      const userId = await createAccount(userData);
+      
+      // 2. Set authenticated token
+      await _cio.setUserToken(userId);
+      
+      // 3. Transfer any important anonymous data
+      const cartItems = localStorage.getItem('cart');
+      if (cartItems) {
+        await saveCartToAccount(userId, cartItems);
+      }
+      
+      // 4. Show welcome message
+      await _cio.showMessage({ messageId: 'welcome-new-user' });
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="Use custom attributes to enrich anonymous profiles">
+    ```javascript
+    // Track anonymous user behavior
+    _cio.setCustomAttribute('source', document.referrer);
+    _cio.setCustomAttribute('landingPage', window.location.pathname);
+    _cio.setCustomAttribute('deviceType', getMobileOrDesktop());
+    _cio.setCustomAttribute('visitCount', getVisitCount());
+    
+    // Use these for targeted anonymous messaging
+    ```
+  </Accordion>
+  
+  <Accordion title="Respect user privacy">
+    - Always inform users about tracking
+    - Respect Do Not Track settings
+    - Provide opt-out mechanisms
+    - Clear guest data on request
+    
+    ```javascript
+    function respectPrivacy() {
+      if (navigator.doNotTrack === '1') {
+        // Don't create guest session
+        return;
+      }
+      
+      _cio.setup({
+        siteId: 'your-site-id',
+        useAnonymousSession: true
+      });
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Troubleshooting
+
+### Guest session not created
+
+If a guest session isn't being created:
+
+1. Verify `useAnonymousSession: true` is set in setup
+2. Check that no authenticated user token already exists
+3. Check browser console for errors
+4. Verify local storage is enabled and not full
+
+```javascript
+// Debug guest session creation
+await _cio.setup({
+  siteId: 'your-site-id',
+  dataCenter: 'US',
+  useAnonymousSession: true,
+  logging: true  // Enable debug logging
+});
+```
+
+### Authenticated session not overriding guest
+
+Make sure you're calling `setUserToken()` after login:
+
+```javascript
+// ✅ Correct
+async function login(userId) {
+  await _cio.setUserToken(userId);
+  console.log('Authenticated session started');
+}
+
+// ❌ Incorrect - forgetting to call setUserToken
+async function login(userId) {
+  // Missing: _cio.setUserToken(userId);
+  console.log('User logged in');
+}
+```
+
+<Card title="Next Steps" icon="arrow-right" href="/guides/custom-attributes">
+  Learn how to use custom attributes with anonymous sessions
+</Card>

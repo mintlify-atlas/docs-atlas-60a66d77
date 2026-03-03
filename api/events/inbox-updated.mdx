@@ -1,0 +1,217 @@
+---
+title: messageInboxUpdated
+description: Event triggered when the inbox message list changes
+---
+
+The `messageInboxUpdated` event is dispatched whenever the inbox message collection is updated, including when messages are added, opened, or removed from the inbox.
+
+## Event Name
+
+`messageInboxUpdated`
+
+## When Triggered
+
+This event is triggered when:
+- New messages are added to the inbox
+- An inbox message's open state is changed via `Gist.updateInboxMessageOpenState()`
+- A message is removed from the inbox via `Gist.removeInboxMessage()`
+- The inbox message list is refreshed from local storage
+
+## Event Payload
+
+The event payload is an array of inbox messages:
+
+<ResponseField name="messages" type="InboxMessage[]" required>
+  Array of all current inbox messages
+  
+  <Expandable title="InboxMessage properties">
+    <ResponseField name="messageId" type="string" required>
+      The unique identifier for the message template
+    </ResponseField>
+    
+    <ResponseField name="queueId" type="string">
+      The queue identifier for this inbox message
+    </ResponseField>
+    
+    <ResponseField name="opened" type="boolean">
+      Whether the message has been opened by the user
+    </ResponseField>
+    
+    <ResponseField name="expiry" type="string">
+      ISO 8601 timestamp when the message expires
+    </ResponseField>
+    
+    <ResponseField name="topics" type="string[]">
+      Array of topic tags associated with the message
+    </ResponseField>
+    
+    <ResponseField name="properties" type="MessageProperties">
+      Custom properties associated with the message
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Listening to the Event
+
+Use the `Gist.events.on()` method to listen for this event:
+
+```javascript
+Gist.events.on('messageInboxUpdated', (messages) => {
+  console.log('Inbox updated:', messages);
+});
+```
+
+## Example
+
+```javascript
+// Update UI when inbox changes
+Gist.events.on('messageInboxUpdated', (messages) => {
+  // Get unopened message count
+  const unopenedCount = messages.filter(msg => !msg.opened).length;
+  
+  // Update badge on inbox icon
+  updateInboxBadge(unopenedCount);
+  
+  // Update inbox list in UI
+  renderInboxMessages(messages);
+  
+  console.log(`Inbox updated: ${messages.length} total, ${unopenedCount} unopened`);
+});
+
+function updateInboxBadge(count) {
+  const badge = document.getElementById('inbox-badge');
+  if (count > 0) {
+    badge.textContent = count;
+    badge.style.display = 'block';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+function renderInboxMessages(messages) {
+  const container = document.getElementById('inbox-list');
+  container.innerHTML = messages.map(msg => `
+    <div class="inbox-item ${msg.opened ? 'read' : 'unread'}">
+      <h4>${msg.messageId}</h4>
+      <p>Topics: ${msg.topics?.join(', ') || 'default'}</p>
+      <button onclick="markAsRead('${msg.queueId}')">Mark as read</button>
+      <button onclick="removeMessage('${msg.queueId}')">Remove</button>
+    </div>
+  `).join('');
+}
+```
+
+## Track Unopened Count
+
+```javascript
+// Real-time unopened message tracking
+Gist.events.on('messageInboxUpdated', async (messages) => {
+  const unopenedCount = messages.filter(msg => !msg.opened).length;
+  
+  // Update custom attribute in Gist
+  Gist.setCustomAttribute('inbox_unopened_count', unopenedCount);
+  
+  // Send to analytics
+  analytics.identify({
+    gist_inbox_unopened: unopenedCount,
+    gist_inbox_total: messages.length
+  });
+  
+  // Update browser notification badge
+  if ('setAppBadge' in navigator) {
+    navigator.setAppBadge(unopenedCount);
+  }
+});
+
+// Initialize on page load
+const initialCount = await Gist.getInboxUnopenedCount();
+console.log(`Initial unopened count: ${initialCount}`);
+```
+
+## Filter by Topics
+
+```javascript
+// Handle different topics separately
+Gist.events.on('messageInboxUpdated', (messages) => {
+  // Group messages by topic
+  const byTopic = messages.reduce((acc, msg) => {
+    const topics = msg.topics || ['default'];
+    topics.forEach(topic => {
+      if (!acc[topic]) acc[topic] = [];
+      acc[topic].push(msg);
+    });
+    return acc;
+  }, {});
+  
+  // Update UI sections for each topic
+  Object.entries(byTopic).forEach(([topic, topicMessages]) => {
+    const unopened = topicMessages.filter(msg => !msg.opened).length;
+    console.log(`Topic "${topic}": ${topicMessages.length} total, ${unopened} unopened`);
+    
+    updateTopicSection(topic, topicMessages, unopened);
+  });
+});
+
+function updateTopicSection(topic, messages, unopenedCount) {
+  const section = document.getElementById(`topic-${topic}`);
+  if (section) {
+    section.querySelector('.count').textContent = unopenedCount;
+    // Update message list for this topic
+  }
+}
+```
+
+## Managing Inbox Messages
+
+```javascript
+// Set up inbox management with event tracking
+Gist.events.on('messageInboxUpdated', (messages) => {
+  console.log('Inbox updated with', messages.length, 'messages');
+});
+
+// Mark a message as opened
+async function markAsRead(queueId) {
+  try {
+    await Gist.updateInboxMessageOpenState(queueId, true);
+    // messageInboxUpdated event will fire automatically
+  } catch (error) {
+    console.error('Failed to mark message as read:', error);
+  }
+}
+
+// Remove a message from inbox
+async function removeMessage(queueId) {
+  try {
+    await Gist.removeInboxMessage(queueId);
+    // messageInboxUpdated event will fire automatically
+  } catch (error) {
+    console.error('Failed to remove message:', error);
+  }
+}
+
+// Get current inbox state
+async function loadInbox() {
+  const messages = await Gist.getInboxMessages();
+  console.log('Current inbox:', messages);
+  // This doesn't trigger the event, use it for initial load
+}
+```
+
+## Remove Event Listener
+
+To remove an event listener, use `Gist.events.off()`:
+
+```javascript
+const inboxHandler = (messages) => {
+  console.log('Inbox updated:', messages.length);
+};
+
+// Add listener
+Gist.events.on('messageInboxUpdated', inboxHandler);
+
+// Remove specific listener
+Gist.events.off('messageInboxUpdated', inboxHandler);
+
+// Remove all listeners for this event
+Gist.events.off('messageInboxUpdated');
+```

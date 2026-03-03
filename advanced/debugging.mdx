@@ -1,0 +1,326 @@
+---
+title: "Debugging"
+description: "Enable logging and troubleshoot common issues with the Gist Web SDK"
+---
+
+## Overview
+
+The Gist Web SDK includes built-in logging capabilities to help you debug integration issues and understand SDK behavior during development.
+
+## Enabling Logging
+
+Enable logging by setting the `logging` option to `true` during SDK initialization:
+
+```javascript
+import Gist from '@customer.io/gist-web';
+
+await Gist.setup({
+  siteId: 'your-site-id',
+  dataCenter: 'US',
+  logging: true // Enable debug logging
+});
+```
+
+<Warning>
+Always disable logging in production environments. Logging can expose sensitive information and impact performance.
+</Warning>
+
+## What Gets Logged
+
+When logging is enabled, the SDK logs important events and state changes:
+
+### Initialization
+```
+Gist: Setup complete on prod environment.
+```
+
+### User Management
+```
+Gist: Set user token to "user_123"
+Gist: Cleared user token
+```
+
+### Localization
+```
+Gist: Set user locate to "es-ES"
+```
+
+### Preview Mode
+```
+Gist: Preview mode enabled with user token: preview_user_123
+```
+
+### Message Events
+```
+Gist: Message shown: msg_abc123
+Gist: Message dismissed: msg_abc123
+Gist: Message error: msg_abc123
+Gist: Message action: /dashboard, click with name btn_signup on instance_xyz
+```
+
+### Route Changes
+```
+Gist: Current route set to: /dashboard
+```
+
+### Storage Events
+```
+Gist: Error checking key gist.web.userLocale for expiry: [error details]
+```
+
+## Implementation Details
+
+Logging is implemented in `src/utilities/log.ts`:
+
+```javascript
+export function log(message: string): void {
+  if (Gist.config && Gist.config.logging) {
+    console.log(`Gist: ${message}`);
+  }
+}
+```
+
+All log messages are prefixed with `Gist:` to make them easy to identify in your browser's console.
+
+## Browser Console Filtering
+
+Filter console output to show only Gist logs:
+
+### Chrome DevTools
+1. Open DevTools (F12)
+2. Go to Console tab
+3. In the filter box, type: `Gist:`
+
+### Firefox DevTools
+1. Open DevTools (F12)
+2. Go to Console tab
+3. In the filter box, type: `Gist:`
+
+### Safari Web Inspector
+1. Open Web Inspector (Cmd+Option+I)
+2. Go to Console tab
+3. In the filter box, type: `Gist:`
+
+## Common Issues and Solutions
+
+### Messages Not Appearing
+
+**Check logging output:**
+
+```javascript
+await Gist.setup({
+  siteId: 'your-site-id',
+  dataCenter: 'US',
+  logging: true
+});
+
+// Look for:
+// - "Setup complete" message
+// - User token confirmation
+// - Message events
+```
+
+**Common causes:**
+- User token not set correctly
+- Incorrect `siteId` or `dataCenter`
+- No messages configured for the user in Customer.io
+- Route rules not matching current page
+
+### User Token Not Persisting
+
+<Info>
+If you're in preview mode, session data is intentionally not persisted to `localStorage`.
+</Info>
+
+**Check if preview mode is active:**
+
+```javascript
+if (Gist.config.isPreviewSession) {
+  console.log('Preview mode active - session not persisted');
+}
+```
+
+**Verify localStorage:**
+
+```javascript
+// Check stored user token
+const userToken = localStorage.getItem('gist.web.userToken');
+console.log('Stored user token:', userToken);
+```
+
+### Messages Showing in Wrong Language
+
+**Check current locale:**
+
+```javascript
+// Enable logging to see locale changes
+Gist.setUserLocale('es-ES');
+// Console: "Gist: Set user locate to 'es-ES'"
+
+// Check what's stored
+const locale = localStorage.getItem('gist.web.userLocale');
+console.log('Stored locale:', locale);
+```
+
+### Storage Quota Exceeded
+
+**Monitor storage usage:**
+
+```javascript
+// Check localStorage size
+let total = 0;
+for (let key in localStorage) {
+  if (key.startsWith('gist.web.')) {
+    total += localStorage[key].length;
+    console.log(key, localStorage[key].length);
+  }
+}
+console.log('Total Gist storage:', total, 'characters');
+```
+
+**Clear expired data:**
+
+The SDK automatically clears expired data on initialization, but you can also clear manually:
+
+```javascript
+// Clear all Gist data
+for (let key in localStorage) {
+  if (key.startsWith('gist.web.')) {
+    localStorage.removeItem(key);
+  }
+}
+```
+
+## Development vs. Production
+
+### Development Configuration
+
+```javascript
+await Gist.setup({
+  siteId: 'your-site-id',
+  dataCenter: 'US',
+  env: 'dev',
+  logging: true,
+  experiments: true
+});
+```
+
+### Production Configuration
+
+```javascript
+await Gist.setup({
+  siteId: 'your-site-id',
+  dataCenter: 'US',
+  // env defaults to 'prod'
+  // logging defaults to false
+  // experiments defaults to false
+});
+```
+
+### Environment-Based Configuration
+
+```javascript
+const isDevelopment = process.env.NODE_ENV === 'development';
+
+await Gist.setup({
+  siteId: 'your-site-id',
+  dataCenter: 'US',
+  env: isDevelopment ? 'dev' : 'prod',
+  logging: isDevelopment,
+  experiments: isDevelopment
+});
+```
+
+## Advanced Debugging
+
+### Monitoring Events
+
+Listen to SDK events for custom logging:
+
+```javascript
+import Gist from '@customer.io/gist-web';
+
+// Listen for message shown events
+Gist.events.on('messageShown', (message) => {
+  console.log('Message shown:', {
+    messageId: message.messageId,
+    instanceId: message.instanceId,
+    route: message.currentRoute
+  });
+});
+
+// Listen for message dismissed events
+Gist.events.on('messageDismissed', (message) => {
+  console.log('Message dismissed:', message.messageId);
+});
+
+// Listen for message actions
+Gist.events.on('messageAction', ({ message, action, name }) => {
+  console.log('Message action:', {
+    messageId: message.messageId,
+    action: action,
+    actionName: name
+  });
+});
+```
+
+### Network Monitoring
+
+Monitor SDK network requests:
+
+1. Open browser DevTools
+2. Go to Network tab
+3. Filter by "customer.io" or "gist"
+4. Check request/response payloads
+
+### Storage Inspection
+
+Inspect SDK storage:
+
+1. Open browser DevTools
+2. Go to Application/Storage tab
+3. Expand Local Storage or Session Storage
+4. Look for keys starting with `gist.web.`
+
+## Performance Debugging
+
+### Message Render Time
+
+```javascript
+Gist.events.on('messageShown', (message) => {
+  if (message.renderStartTime) {
+    const renderTime = Date.now() - message.renderStartTime;
+    console.log(`Message rendered in ${renderTime}ms`);
+  }
+});
+```
+
+### Memory Usage
+
+Monitor SDK impact on memory:
+
+```javascript
+if (performance.memory) {
+  const before = performance.memory.usedJSHeapSize;
+  
+  await Gist.setup({ /* config */ });
+  
+  const after = performance.memory.usedJSHeapSize;
+  const sdkMemory = (after - before) / 1024 / 1024;
+  console.log(`SDK memory usage: ${sdkMemory.toFixed(2)} MB`);
+}
+```
+
+## Getting Help
+
+If you're still experiencing issues:
+
+1. **Check the documentation** for configuration options
+2. **Review console logs** with logging enabled
+3. **Inspect network requests** in browser DevTools
+4. **Verify Customer.io configuration** in your workspace
+5. **Contact Customer.io support** with:
+   - SDK version
+   - Browser and version
+   - Console logs with logging enabled
+   - Steps to reproduce the issue

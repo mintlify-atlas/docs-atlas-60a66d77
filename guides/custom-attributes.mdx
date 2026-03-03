@@ -1,0 +1,436 @@
+---
+title: Custom Attributes
+description: Set and manage custom user attributes for personalized messaging
+---
+
+Custom attributes allow you to store user-specific data that can be used to personalize messages and target specific user segments. The Gist Web SDK provides methods to set, retrieve, and manage these attributes.
+
+## Overview
+
+Custom attributes are:
+
+- Stored locally in browser storage with a 30-day TTL
+- Automatically included with every message request
+- Available for use in message templates via Liquid syntax
+- Persisted across sessions until manually cleared or expired
+- Synchronized with message properties for personalization
+
+## Setting Attributes
+
+### Set a Single Attribute
+
+Use `setCustomAttribute()` to store a custom attribute:
+
+```javascript
+_cio.setCustomAttribute('plan', 'premium');
+_cio.setCustomAttribute('userName', 'John Doe');
+_cio.setCustomAttribute('accountAge', 365);
+_cio.setCustomAttribute('preferences', { theme: 'dark', notifications: true });
+```
+
+### Supported Data Types
+
+You can store any JSON-serializable value:
+
+- Strings: `'premium'`, `'john@example.com'`
+- Numbers: `42`, `3.14`, `100`
+- Booleans: `true`, `false`
+- Objects: `{ key: 'value' }`
+- Arrays: `['tag1', 'tag2']`
+- Null: `null`
+
+```javascript
+// String
+_cio.setCustomAttribute('email', 'user@example.com');
+
+// Number
+_cio.setCustomAttribute('loginCount', 15);
+
+// Boolean
+_cio.setCustomAttribute('isPremium', true);
+
+// Object
+_cio.setCustomAttribute('settings', {
+  theme: 'dark',
+  language: 'en',
+  notifications: true
+});
+
+// Array
+_cio.setCustomAttribute('interests', ['technology', 'design', 'marketing']);
+```
+
+## Retrieving Attributes
+
+While custom attributes are automatically included in message requests, you can also retrieve them in your application code.
+
+<Note>
+  The SDK stores attributes in a Map internally. Attributes are automatically serialized when saved to local storage and included with message requests.
+</Note>
+
+## Removing Attributes
+
+### Remove a Single Attribute
+
+Remove a specific attribute by key:
+
+```javascript
+_cio.removeCustomAttribute('userName');
+```
+
+The method returns `true` if the attribute existed and was removed, `false` otherwise:
+
+```javascript
+const wasRemoved = _cio.removeCustomAttribute('planType');
+if (wasRemoved) {
+  console.log('Plan type attribute removed');
+} else {
+  console.log('Attribute did not exist');
+}
+```
+
+### Clear All Attributes
+
+Remove all custom attributes at once:
+
+```javascript
+_cio.clearCustomAttributes();
+console.log('All custom attributes cleared');
+```
+
+This is useful when:
+
+- A user logs out
+- You want to reset personalization
+- Testing different attribute combinations
+
+## Using Attributes in Messages
+
+Custom attributes are automatically passed to message templates and can be referenced using Liquid syntax:
+
+<Steps>
+  <Step title="Set attributes in your app">
+    ```javascript
+    _cio.setCustomAttribute('userName', 'Sarah');
+    _cio.setCustomAttribute('plan', 'premium');
+    _cio.setCustomAttribute('trialDaysLeft', 7);
+    ```
+  </Step>
+  
+  <Step title="Reference in message template">
+    In your Customer.io message template:
+    
+    ```liquid
+    Hello {{ custom_attributes.userName }}!
+    
+    Your {{ custom_attributes.plan }} plan has {{ custom_attributes.trialDaysLeft }} days remaining.
+    ```
+  </Step>
+  
+  <Step title="Display the message">
+    ```javascript
+    await _cio.showMessage({
+      messageId: 'trial-reminder'
+    });
+    ```
+    
+    The message will render with the custom attributes:
+    
+    "Hello Sarah! Your premium plan has 7 days remaining."
+  </Step>
+</Steps>
+
+## Common Use Cases
+
+### User Profile Information
+
+Store user profile data for personalization:
+
+```javascript
+function updateUserProfile(user) {
+  _cio.setCustomAttribute('userName', user.name);
+  _cio.setCustomAttribute('email', user.email);
+  _cio.setCustomAttribute('accountType', user.accountType);
+  _cio.setCustomAttribute('joinDate', user.joinDate);
+  _cio.setCustomAttribute('avatarUrl', user.avatarUrl);
+}
+
+// When user logs in
+updateUserProfile(currentUser);
+```
+
+### Subscription and Plan Information
+
+```javascript
+function setSubscriptionInfo(subscription) {
+  _cio.setCustomAttribute('plan', subscription.plan);
+  _cio.setCustomAttribute('billingCycle', subscription.billingCycle);
+  _cio.setCustomAttribute('renewalDate', subscription.renewalDate);
+  _cio.setCustomAttribute('features', subscription.features);
+}
+
+setSubscriptionInfo({
+  plan: 'Pro',
+  billingCycle: 'monthly',
+  renewalDate: '2024-04-01',
+  features: ['unlimited-storage', 'priority-support', 'api-access']
+});
+```
+
+### Usage Metrics
+
+Track usage for targeted messaging:
+
+```javascript
+function trackUsage() {
+  _cio.setCustomAttribute('projectCount', userProjects.length);
+  _cio.setCustomAttribute('storageUsed', calculateStorageUsed());
+  _cio.setCustomAttribute('lastActiveDate', new Date().toISOString());
+  _cio.setCustomAttribute('featureUsage', {
+    export: 25,
+    share: 10,
+    collaborate: 5
+  });
+}
+
+// Update usage metrics periodically
+setInterval(trackUsage, 60000); // Every minute
+```
+
+### Preferences and Settings
+
+```javascript
+function saveUserPreferences(preferences) {
+  _cio.setCustomAttribute('language', preferences.language);
+  _cio.setCustomAttribute('timezone', preferences.timezone);
+  _cio.setCustomAttribute('emailNotifications', preferences.emailNotifications);
+  _cio.setCustomAttribute('theme', preferences.theme);
+}
+
+saveUserPreferences({
+  language: 'en',
+  timezone: 'America/New_York',
+  emailNotifications: true,
+  theme: 'dark'
+});
+```
+
+### A/B Testing Cohorts
+
+```javascript
+// Assign user to test cohort
+const cohort = Math.random() < 0.5 ? 'control' : 'variant';
+_cio.setCustomAttribute('abTestCohort', cohort);
+_cio.setCustomAttribute('experimentId', 'checkout-flow-v2');
+
+// Show different messages based on cohort
+if (cohort === 'variant') {
+  await _cio.showMessage({ messageId: 'new-checkout-flow' });
+} else {
+  await _cio.showMessage({ messageId: 'standard-checkout' });
+}
+```
+
+## Dynamic Attributes
+
+Update attributes dynamically based on user behavior:
+
+```javascript
+// Track page views
+let pageViews = 0;
+function trackPageView() {
+  pageViews++;
+  _cio.setCustomAttribute('pageViewCount', pageViews);
+  
+  // Show onboarding message after 3 page views
+  if (pageViews === 3) {
+    _cio.showMessage({ messageId: 'onboarding-tour' });
+  }
+}
+
+// Track feature adoption
+function trackFeatureUse(featureName) {
+  const featureUsage = _cio.getCustomAttribute('featureUsage') || {};
+  featureUsage[featureName] = (featureUsage[featureName] || 0) + 1;
+  _cio.setCustomAttribute('featureUsage', featureUsage);
+}
+
+// Track engagement score
+function calculateEngagementScore() {
+  const score = calculateScore(); // Your scoring logic
+  _cio.setCustomAttribute('engagementScore', score);
+  
+  // Show upgrade prompt for highly engaged users
+  if (score > 80) {
+    _cio.showMessage({ messageId: 'power-user-upgrade' });
+  }
+}
+```
+
+## Combining with Message Properties
+
+Custom attributes work alongside message properties for maximum flexibility:
+
+```javascript
+// Set persistent attributes
+_cio.setCustomAttribute('userName', 'Alice');
+_cio.setCustomAttribute('plan', 'free');
+
+// Show message with additional context-specific properties
+await _cio.showMessage({
+  messageId: 'upgrade-prompt',
+  properties: {
+    // These are specific to this message instance
+    upgradeOffer: '50% off',
+    validUntil: '2024-03-31'
+  }
+});
+
+// In your message template, you can use both:
+// {{ custom_attributes.userName }} - from custom attributes
+// {{ upgradeOffer }} - from message properties
+```
+
+## Session Management
+
+### On User Login
+
+```javascript
+function handleUserLogin(user) {
+  // Clear any previous user's attributes
+  _cio.clearCustomAttributes();
+  
+  // Set user token for authenticated session
+  _cio.setUserToken(user.id);
+  
+  // Set new user's attributes
+  _cio.setCustomAttribute('userName', user.name);
+  _cio.setCustomAttribute('email', user.email);
+  _cio.setCustomAttribute('plan', user.subscription.plan);
+  _cio.setCustomAttribute('loginCount', user.loginCount);
+}
+```
+
+### On User Logout
+
+```javascript
+function handleUserLogout() {
+  // Clear custom attributes
+  _cio.clearCustomAttributes();
+  
+  // Clear user token
+  _cio.clearUserToken();
+  
+  console.log('User session cleared');
+}
+```
+
+## Storage and Persistence
+
+Custom attributes are stored in browser local storage:
+
+- **Storage Key**: `gist.web.customAttributes`
+- **TTL**: 30 days from the last update
+- **Size**: Limited by browser local storage quota (typically 5-10MB)
+- **Serialization**: Automatically handled by the SDK
+
+```javascript
+// Attributes persist across page reloads
+_cio.setCustomAttribute('theme', 'dark');
+
+// After page reload, the attribute is still available
+// and will be included in message requests
+```
+
+## Validation and Error Handling
+
+The SDK validates attribute keys:
+
+```javascript
+// Valid keys
+_cio.setCustomAttribute('userName', 'John'); // Returns true
+_cio.setCustomAttribute('plan_type', 'premium'); // Returns true
+
+// Invalid keys
+_cio.setCustomAttribute('', 'value'); // Returns false, logs error
+_cio.setCustomAttribute(null, 'value'); // Returns false, logs error
+_cio.setCustomAttribute(123, 'value'); // Returns false, logs error
+```
+
+Always check return values when setting attributes:
+
+```javascript
+const success = _cio.setCustomAttribute('userPlan', plan);
+if (!success) {
+  console.error('Failed to set custom attribute');
+  // Handle the error appropriately
+}
+```
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Keep attribute names consistent">
+    Use consistent naming conventions for attributes:
+    
+    ```javascript
+    // Good: camelCase
+    _cio.setCustomAttribute('userName', 'John');
+    _cio.setCustomAttribute('accountType', 'premium');
+    
+    // Also good: snake_case
+    _cio.setCustomAttribute('user_name', 'John');
+    _cio.setCustomAttribute('account_type', 'premium');
+    ```
+  </Accordion>
+  
+  <Accordion title="Don't store sensitive data">
+    Never store sensitive information in custom attributes:
+    
+    ```javascript
+    // ❌ Don't do this
+    _cio.setCustomAttribute('creditCard', '4111-1111-1111-1111');
+    _cio.setCustomAttribute('password', 'user-password');
+    _cio.setCustomAttribute('ssn', '123-45-6789');
+    
+    // ✅ Do this instead
+    _cio.setCustomAttribute('hasPaymentMethod', true);
+    _cio.setCustomAttribute('lastFourDigits', '1111');
+    ```
+  </Accordion>
+  
+  <Accordion title="Update attributes strategically">
+    Balance between keeping attributes up-to-date and avoiding excessive storage writes:
+    
+    ```javascript
+    // Update on significant changes
+    _cio.setCustomAttribute('plan', newPlan); // Update immediately
+    
+    // Batch less critical updates
+    let metrics = {};
+    function updateMetrics() {
+      metrics.pageViews++;
+      // Save every 5 page views or on page unload
+      if (metrics.pageViews % 5 === 0) {
+        _cio.setCustomAttribute('pageViews', metrics.pageViews);
+      }
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="Clear attributes on logout">
+    Always clear attributes when users log out to prevent data leakage:
+    
+    ```javascript
+    function logout() {
+      _cio.clearCustomAttributes();
+      _cio.clearUserToken();
+      // Additional logout logic
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+<Card title="Next Steps" icon="arrow-right" href="/guides/displaying-messages">
+  Learn how to display personalized messages using custom attributes
+</Card>

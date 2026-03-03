@@ -1,0 +1,154 @@
+---
+title: "clearCustomAttributes"
+description: "Remove all custom attributes for the current user"
+---
+
+Clears all custom attributes that were previously set for the user. This removes all stored attributes from local storage.
+
+## Method Signature
+
+```javascript
+Gist.clearCustomAttributes()
+```
+
+## Parameters
+
+This method takes no parameters.
+
+## Returns
+
+<ResponseField name="void" type="void">
+  This method does not return a value
+</ResponseField>
+
+## Example Usage
+
+```javascript
+// Clear all custom attributes
+Gist.clearCustomAttributes();
+console.log('All custom attributes cleared');
+```
+
+```javascript
+// Clear attributes on user logout
+const handleUserLogout = () => {
+  // Clear custom attributes
+  Gist.clearCustomAttributes();
+  
+  // Clear user token
+  Gist.clearUserToken();
+  
+  console.log('User data cleared');
+};
+```
+
+```javascript
+// Reset user profile completely
+const resetUserProfile = () => {
+  const confirmed = confirm('This will clear all your custom data. Continue?');
+  
+  if (confirmed) {
+    Gist.clearCustomAttributes();
+    console.log('User profile reset successfully');
+  }
+};
+```
+
+```javascript
+// Clear and reinitialize with new data
+const switchUserProfile = (newProfile) => {
+  // Clear old attributes
+  Gist.clearCustomAttributes();
+  
+  // Set new attributes
+  Gist.setCustomAttribute('userId', newProfile.id);
+  Gist.setCustomAttribute('plan', newProfile.plan);
+  Gist.setCustomAttribute('role', newProfile.role);
+  
+  console.log('Profile switched successfully');
+};
+```
+
+## Notes
+
+- Removes all custom attributes immediately
+- Clears the local storage entry for custom attributes
+- Cannot be undone - all attribute data is permanently deleted
+- Does not affect other SDK data (user token, locale, inbox messages)
+- Changes take effect immediately
+
+## Use Cases
+
+**User Logout**
+```javascript
+const logout = async () => {
+  // Clear all user-specific data
+  Gist.clearCustomAttributes();
+  await Gist.clearUserToken();
+  
+  // Redirect to login page
+  window.location.href = '/login';
+};
+```
+
+**Privacy Compliance**
+```javascript
+// GDPR "Right to be Forgotten" implementation
+const deleteUserData = () => {
+  Gist.clearCustomAttributes();
+  console.log('User data deleted in compliance with privacy regulations');
+};
+```
+
+**User Session Reset**
+```javascript
+// Clear cached data on session timeout
+const handleSessionTimeout = () => {
+  Gist.clearCustomAttributes();
+  alert('Your session has expired. Please log in again.');
+  redirectToLogin();
+};
+```
+
+**Testing and Development**
+```javascript
+// Reset state during testing
+const resetTestState = () => {
+  Gist.clearCustomAttributes();
+  console.log('Test state cleared');
+};
+```
+
+**Account Switching**
+```javascript
+// Clear previous user's data before switching accounts
+const switchAccount = (newAccountId) => {
+  // Clear previous account's attributes
+  Gist.clearCustomAttributes();
+  
+  // Set new account token
+  Gist.setUserToken(newAccountId);
+  
+  // Initialize new account attributes
+  initializeAccountAttributes(newAccountId);
+};
+```
+
+## Alternative: Selective Removal
+
+If you need to remove only specific attributes while keeping others, use `removeCustomAttribute()` instead:
+
+```javascript
+// Remove only specific attributes
+Gist.removeCustomAttribute('tempData');
+Gist.removeCustomAttribute('sessionId');
+
+// Instead of clearing everything
+// Gist.clearCustomAttributes();
+```
+
+## Related Methods
+
+- [setCustomAttribute](/api/set-custom-attribute) - Set a custom attribute
+- [removeCustomAttribute](/api/remove-custom-attribute) - Remove a specific custom attribute
+- [clearUserToken](/api/clear-user-token) - Clear the user authentication token

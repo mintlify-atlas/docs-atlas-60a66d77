@@ -1,0 +1,355 @@
+---
+title: "Local Storage"
+description: "Understand how the SDK uses browser storage for persistence"
+---
+
+## Overview
+
+The Gist Web SDK uses browser storage (`localStorage` and `sessionStorage`) to persist user sessions, message state, and configuration data. Understanding storage behavior is important for debugging and managing user data.
+
+## Storage Types
+
+The SDK uses two types of browser storage:
+
+### localStorage
+Persists data across browser sessions. Used when session persistence is enabled (default).
+
+### sessionStorage
+Persists data only for the current browser tab/window. Used in preview mode or when session persistence is disabled.
+
+## Storage Strategy
+
+By default, the SDK uses `localStorage` to persist sessions. In preview mode, it switches to `sessionStorage`:
+
+```javascript
+function getStorage(): Storage {
+  return isSessionBeingPersisted() ? localStorage : sessionStorage;
+}
+```
+
+## Stored Data
+
+All SDK data is stored with keys prefixed by `gist.web.`:
+
+### Session Persistence Flag
+- **Key**: `gist.web.isPersistingSession`
+- **Location**: `sessionStorage`
+- **Value**: `"true"` or `"false"`
+- **Purpose**: Determines whether to use `localStorage` or `sessionStorage`
+
+### User Locale
+- **Key**: `gist.web.userLocale`
+- **Location**: `localStorage` or `sessionStorage`
+- **Value**: BCP 47 language tag (e.g., `"en-US"`)
+- **Expiry**: 365 days
+
+### User Token
+- **Key**: `gist.web.userToken`
+- **Location**: `localStorage` or `sessionStorage`
+- **Value**: User identifier string
+- **Expiry**: Configurable (default: 365 days)
+
+### Message State
+- **Keys**: `gist.web.message.broadcasts.*` and `gist.web.message.user.*`
+- **Location**: `localStorage` or `sessionStorage`
+- **Purpose**: Track message display count, visibility, and state
+- **Expiry**: Various (automatically cleaned up)
+
+## Data Structure
+
+Stored items use a structured format with expiry timestamps:
+
+```javascript
+interface StoredItem {
+  value: unknown;
+  expiry: Date | string;
+}
+```
+
+Example stored data:
+
+```json
+{
+  "value": "en-US",
+  "expiry": "2027-03-03T00:00:00.000Z"
+}
+```
+
+## Storage Operations
+
+### Setting Values
+
+The SDK provides a utility to store values with automatic expiry:
+
+```javascript
+export function setKeyToLocalStore(
+  key: string,
+  value: unknown,
+  ttl: Date | null = null,
+): void {
+  let expiryDate = ttl;
+  if (!expiryDate) {
+    expiryDate = new Date();
+    expiryDate.setDate(expiryDate.getDate() + 365); // Default: 365 days
+  }
+  const item: StoredItem = {
+    value,
+    expiry: expiryDate,
+  };
+  getStorage().setItem(key, JSON.stringify(item));
+}
+```
+
+### Getting Values
+
+Retrieval automatically checks expiry and removes expired items:
+
+```javascript
+export function getKeyFromLocalStore(key: string): unknown | null {
+  return checkKeyForExpiry(key);
+}
+```
+
+### Removing Values
+
+```javascript
+export function clearKeyFromLocalStore(key: string): void {
+  getStorage().removeItem(key);
+}
+```
+
+## Automatic Cleanup
+
+### On Initialization
+
+The SDK automatically removes expired data when initialized:
+
+```javascript
+export function clearExpiredFromLocalStore(): void {
+  const storage = getStorage();
+  for (let i = storage.length - 1; i >= 0; i--) {
+    checkKeyForExpiry(storage.key(i));
+  }
+}
+```
+
+### Expiry Rules
+
+1. **Standard Expiry**: Items expire based on their `expiry` timestamp (default: 365 days)
+
+2. **Message Cache Expiry**: Broadcast and user message data with expiry > 61 minutes in the future is automatically cleaned:
+   ```javascript
+   const isBroadcastOrUserKey =
+     (key.startsWith("gist.web.message.broadcasts") &&
+       !key.endsWith("shouldShow") &&
+       !key.endsWith("numberOfTimesShown")) ||
+     (key.startsWith("gist.web.message.user") &&
+       !key.endsWith("seen") &&
+       !key.endsWith("state"));
+   
+   const sixtyMinutesFromNow = new Date(now.getTime() + 61 * 60 * 1000);
+   if (isBroadcastOrUserKey && expiryTime.getTime() > sixtyMinutesFromNow.getTime()) {
+     clearKeyFromLocalStore(key);
+     return null;
+   }
+   ```
+
+## Preview Mode Storage
+
+<Info>
+In preview mode, the SDK uses `sessionStorage` instead of `localStorage` to avoid polluting persistent storage with test data.
+</Info>
+
+```javascript
+export function shouldPersistSession(persisted: boolean | string): void {
+  sessionStorage.setItem('gist.web.isPersistingSession', String(persisted));
+}
+
+export function isSessionBeingPersisted(): boolean {
+  const currentValue = sessionStorage.getItem('gist.web.isPersistingSession');
+  if (currentValue === null) {
+    sessionStorage.setItem('gist.web.isPersistingSession', 'true');
+    return true;
+  }
+  return currentValue === 'true';
+}
+```
+
+When preview mode is enabled:
+
+```javascript
+if (cioPreviewId) {
+  shouldPersistSession(false); // Switch to sessionStorage
+  Gist.setUserToken(cioPreviewId);
+}
+```
+
+## Managing Storage
+
+### Inspect Stored Data
+
+View all Gist data in browser DevTools:
+
+```javascript
+// List all Gist keys in localStorage
+for (let i = 0; i < localStorage.length; i++) {
+  const key = localStorage.key(i);
+  if (key && key.startsWith('gist.web.')) {
+    const value = localStorage.getItem(key);
+    console.log(key, JSON.parse(value));
+  }
+}
+```
+
+### Clear All Gist Data
+
+Remove all SDK data from storage:
+
+```javascript
+// Clear from localStorage
+for (let key in localStorage) {
+  if (key.startsWith('gist.web.')) {
+    localStorage.removeItem(key);
+  }
+}
+
+// Clear from sessionStorage
+for (let key in sessionStorage) {
+  if (key.startsWith('gist.web.')) {
+    sessionStorage.removeItem(key);
+  }
+}
+```
+
+### Monitor Storage Usage
+
+Calculate how much storage the SDK is using:
+
+```javascript
+function getGistStorageSize() {
+  let totalSize = 0;
+  const keys = [];
+  
+  // Check localStorage
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key && key.startsWith('gist.web.')) {
+      const value = localStorage.getItem(key);
+      const size = new Blob([value]).size;
+      totalSize += size;
+      keys.push({ key, size });
+    }
+  }
+  
+  console.log('Total Gist storage:', (totalSize / 1024).toFixed(2), 'KB');
+  console.log('Stored keys:', keys);
+  
+  return totalSize;
+}
+
+getGistStorageSize();
+```
+
+## Storage Limits
+
+<Warning>
+Browser storage has size limits (typically 5-10MB for `localStorage`). The SDK handles storage errors gracefully, but excessive data may cause issues.
+</Warning>
+
+### Handling Storage Quota Errors
+
+The SDK catches and logs storage errors:
+
+```javascript
+try {
+  const item: StoredItem = { value, expiry: expiryDate };
+  getStorage().setItem(key, JSON.stringify(item));
+} catch (e) {
+  log(`Error setting key ${key}: ${e}`);
+}
+```
+
+If you encounter quota errors:
+
+1. Clear expired data manually
+2. Reduce the number of active messages
+3. Clear old message state data
+
+## Privacy Considerations
+
+### User Data
+
+The SDK stores:
+- User tokens (identifiers)
+- Locale preferences
+- Message interaction history
+
+<Info>
+No sensitive user data (passwords, payment info, etc.) is stored by the SDK.
+</Info>
+
+### GDPR Compliance
+
+When a user requests data deletion:
+
+```javascript
+// Clear user token
+await Gist.clearUserToken();
+
+// Clear all Gist data
+for (let key in localStorage) {
+  if (key.startsWith('gist.web.')) {
+    localStorage.removeItem(key);
+  }
+}
+```
+
+### Incognito/Private Browsing
+
+In private browsing mode:
+- `localStorage` behaves like `sessionStorage` (cleared when browser closes)
+- Storage quota limits may be smaller
+- SDK functionality is not affected
+
+## Best Practices
+
+1. **Don't manipulate storage directly**: Use SDK methods to manage data
+   ```javascript
+   // ✅ Good
+   Gist.setUserLocale('en-US');
+   
+   // ❌ Bad
+   localStorage.setItem('gist.web.userLocale', 'en-US');
+   ```
+
+2. **Clear data on logout**: Remove user-specific data when users sign out
+   ```javascript
+   async function logout() {
+     await Gist.clearUserToken();
+     // SDK automatically handles cleanup
+   }
+   ```
+
+3. **Monitor storage in development**: Enable logging to see storage operations
+   ```javascript
+   await Gist.setup({
+     siteId: 'your-site-id',
+     dataCenter: 'US',
+     logging: true
+   });
+   ```
+
+4. **Test in preview mode**: Use preview mode for testing to avoid affecting production storage
+   ```
+   https://your-app.com?cioPreviewId=test_user
+   ```
+
+5. **Handle storage errors**: Implement error handling for storage quota issues
+   ```javascript
+   try {
+     Gist.setUserLocale('en-US');
+   } catch (error) {
+     console.error('Failed to set locale:', error);
+     // Handle gracefully
+   }
+   ```

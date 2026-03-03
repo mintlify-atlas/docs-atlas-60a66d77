@@ -1,0 +1,71 @@
+---
+title: 'setup'
+description: 'Initialize the Gist Web SDK'
+---
+
+## Method Signature
+
+```javascript
+Gist.setup(config: GistConfig): Promise<void>
+```
+
+Initializes the Gist Web SDK with your configuration. This method must be called before using any other SDK functionality.
+
+## Parameters
+
+<ParamField path="config" type="GistConfig" required>
+  Configuration object for the SDK
+  
+  <Expandable title="properties">
+    <ParamField path="siteId" type="string" required>
+      Your Customer.io site ID
+    </ParamField>
+    
+    <ParamField path="dataCenter" type="string" required>
+      Your Customer.io data center (e.g., "US" or "EU")
+    </ParamField>
+    
+    <ParamField path="env" type="'prod' | 'dev' | 'local'" default="prod">
+      Environment to use
+    </ParamField>
+    
+    <ParamField path="logging" type="boolean" default="false">
+      Enable console logging for debugging
+    </ParamField>
+    
+    <ParamField path="experiments" type="boolean" default="false">
+      Enable experimental features
+    </ParamField>
+    
+    <ParamField path="useAnonymousSession" type="boolean" default="false">
+      Allow anonymous users to receive messages
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+## Returns
+
+<ResponseField name="Promise<void>" type="Promise<void>">
+  Resolves when initialization is complete
+</ResponseField>
+
+## Example
+
+```javascript
+import Gist from '@customer.io/gist-web';
+
+await Gist.setup({
+  siteId: 'your-site-id',
+  dataCenter: 'US',
+  env: 'prod',
+  logging: true,
+  useAnonymousSession: false
+});
+```
+
+## Notes
+
+- This method can only be called once. Subsequent calls will be ignored with a log message.
+- The SDK automatically starts listening for messages after setup completes.
+- If `useAnonymousSession` is enabled and no user token is set, a guest session will be created.
+- The method sets up document visibility listeners to manage message display when the page is hidden/visible.

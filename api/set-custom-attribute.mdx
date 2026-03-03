@@ -1,0 +1,126 @@
+---
+title: "setCustomAttribute"
+description: "Set a custom attribute for the current user"
+---
+
+Sets a custom attribute for the user. Custom attributes are stored locally and can be used for message targeting and personalization. Attributes persist for 30 days.
+
+## Method Signature
+
+```javascript
+Gist.setCustomAttribute(key, value)
+```
+
+## Parameters
+
+<ParamField path="key" type="string" required>
+  The attribute key. Must be a non-empty string.
+</ParamField>
+
+<ParamField path="value" type="unknown" required>
+  The attribute value. Can be any JSON-serializable type (string, number, boolean, object, array, null).
+</ParamField>
+
+## Returns
+
+<ResponseField name="boolean" type="boolean">
+  Returns `true` if the attribute was successfully set, `false` if the key is invalid
+</ResponseField>
+
+## Example Usage
+
+```javascript
+// Set a string attribute
+const success = Gist.setCustomAttribute('plan', 'premium');
+console.log(success); // true
+```
+
+```javascript
+// Set a number attribute
+Gist.setCustomAttribute('loginCount', 42);
+```
+
+```javascript
+// Set a boolean attribute
+Gist.setCustomAttribute('isVerified', true);
+```
+
+```javascript
+// Set an object attribute
+Gist.setCustomAttribute('preferences', {
+  notifications: true,
+  theme: 'dark',
+  language: 'en'
+});
+```
+
+```javascript
+// Set an array attribute
+Gist.setCustomAttribute('interests', ['technology', 'design', 'music']);
+```
+
+```javascript
+// Update user profile attributes
+const updateUserProfile = (profile) => {
+  Gist.setCustomAttribute('firstName', profile.firstName);
+  Gist.setCustomAttribute('lastName', profile.lastName);
+  Gist.setCustomAttribute('email', profile.email);
+  Gist.setCustomAttribute('accountType', profile.accountType);
+};
+```
+
+```javascript
+// Track user behavior
+Gist.setCustomAttribute('lastVisitedPage', window.location.pathname);
+Gist.setCustomAttribute('lastActiveDate', new Date().toISOString());
+```
+
+## Validation
+
+```javascript
+// Invalid key - returns false
+const result1 = Gist.setCustomAttribute('', 'value');
+console.log(result1); // false
+
+const result2 = Gist.setCustomAttribute(null, 'value');
+console.log(result2); // false
+
+// Valid key - returns true
+const result3 = Gist.setCustomAttribute('validKey', 'value');
+console.log(result3); // true
+```
+
+## Notes
+
+- Custom attributes are stored in local storage with a TTL of 30 days
+- Attributes persist across browser sessions
+- Setting an attribute with an existing key will overwrite the previous value
+- The key must be a non-empty string, or the method returns `false`
+- Values must be JSON-serializable
+- Custom attributes can be used for message targeting in Customer.io campaigns
+
+## Use Cases
+
+**User Segmentation**
+```javascript
+Gist.setCustomAttribute('userSegment', 'enterprise');
+Gist.setCustomAttribute('accountAge', 'veteran');
+```
+
+**Feature Flags**
+```javascript
+Gist.setCustomAttribute('betaFeatures', true);
+Gist.setCustomAttribute('enabledFeatures', ['feature1', 'feature2']);
+```
+
+**Behavioral Tracking**
+```javascript
+Gist.setCustomAttribute('pageViews', 150);
+Gist.setCustomAttribute('lastPurchaseDate', '2026-03-01');
+```
+
+## Related Methods
+
+- [removeCustomAttribute](/api/remove-custom-attribute) - Remove a single custom attribute
+- [clearCustomAttributes](/api/clear-custom-attributes) - Remove all custom attributes
+- [setUserLocale](/api/set-user-locale) - Set the user's locale

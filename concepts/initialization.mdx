@@ -1,0 +1,123 @@
+---
+title: "Initialization"
+description: "Learn how to initialize the Gist Web SDK with Gist.setup()"
+---
+
+## Overview
+
+The Gist Web SDK must be initialized before it can deliver in-app messages. Initialization is done by calling the `Gist.setup()` method with a configuration object.
+
+## Basic Setup
+
+The minimal configuration requires your `siteId` and `dataCenter`:
+
+```javascript
+import Gist from '@customerio/gist-web';
+
+await Gist.setup({
+  siteId: 'your-site-id',
+  dataCenter: 'US'
+});
+```
+
+<Note>
+The `setup()` method is asynchronous and returns a Promise. Always use `await` or `.then()` to ensure initialization completes before calling other SDK methods.
+</Note>
+
+## Configuration Options
+
+The `GistConfig` interface defines all available configuration options:
+
+```typescript
+interface GistConfig {
+  siteId: string;              // Required: Your Customer.io site ID
+  dataCenter: string;          // Required: Your data center region (e.g., 'US', 'EU')
+  env?: 'prod' | 'dev' | 'local';  // Optional: Environment (defaults to 'prod')
+  logging?: boolean;           // Optional: Enable console logging (defaults to false)
+  experiments?: boolean;       // Optional: Enable experimental features (defaults to false)
+  useAnonymousSession?: boolean;  // Optional: Enable anonymous sessions (defaults to false)
+}
+```
+
+### Environment Configuration
+
+The `env` option controls which Customer.io environment the SDK connects to:
+
+- **`prod`** (default): Production environment
+- **`dev`**: Development environment for testing
+- **`local`**: Local development environment
+
+```javascript
+await Gist.setup({
+  siteId: 'your-site-id',
+  dataCenter: 'US',
+  env: 'dev'
+});
+```
+
+### Logging
+
+Enable logging to see detailed SDK activity in the browser console:
+
+```javascript
+await Gist.setup({
+  siteId: 'your-site-id',
+  dataCenter: 'US',
+  logging: true
+});
+```
+
+<Tip>
+Enable logging during development to troubleshoot message delivery, routing rules, and user identification.
+</Tip>
+
+### Anonymous Sessions
+
+When `useAnonymousSession` is enabled, the SDK automatically generates a guest user token if no user token is set:
+
+```javascript
+await Gist.setup({
+  siteId: 'your-site-id',
+  dataCenter: 'US',
+  useAnonymousSession: true
+});
+```
+
+See [User Identification](/concepts/user-identification) for more details on anonymous sessions.
+
+## Initialization State
+
+The SDK tracks its initialization state internally. If you call `setup()` multiple times, subsequent calls will be ignored:
+
+```javascript
+// First call initializes the SDK
+await Gist.setup({ siteId: 'abc', dataCenter: 'US' });
+
+// Second call is ignored
+await Gist.setup({ siteId: 'xyz', dataCenter: 'EU' }); // Logs: "Gist SDK already initialized, skipping setup."
+```
+
+<Warning>
+You cannot change the configuration after initialization. The SDK must be reloaded to use different settings.
+</Warning>
+
+## What Happens During Setup
+
+When you call `Gist.setup()`, the SDK:
+
+1. Initializes the event emitter for message lifecycle events
+2. Applies configuration defaults for optional parameters
+3. Clears expired data from local storage
+4. Sets up anonymous sessions if enabled
+5. Starts the message queue listener
+6. Registers document visibility listeners to manage message display
+
+Source: `src/gist.js:53-103`
+
+## Next Steps
+
+After initialization:
+
+1. [Identify users](/concepts/user-identification) with `setUserToken()`
+2. [Set up routing](/concepts/routing) with `setCurrentRoute()`
+3. [Listen for events](/concepts/events) with `Gist.events.on()`

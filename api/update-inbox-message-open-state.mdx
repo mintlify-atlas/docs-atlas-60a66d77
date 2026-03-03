@@ -1,0 +1,111 @@
+---
+title: "updateInboxMessageOpenState"
+description: "Mark an inbox message as opened or unopened"
+---
+
+Updates the open state of an inbox message. This marks the message as read or unread both locally and on the Customer.io server.
+
+## Method Signature
+
+```javascript
+Gist.updateInboxMessageOpenState(queueId, opened)
+```
+
+## Parameters
+
+<ParamField path="queueId" type="string" required>
+  The queue ID of the message to update
+</ParamField>
+
+<ParamField path="opened" type="boolean" required>
+  Set to `true` to mark as opened, `false` to mark as unopened
+</ParamField>
+
+## Returns
+
+<ResponseField name="Promise<void>" type="void">
+  Resolves when the message state has been successfully updated
+</ResponseField>
+
+## Events
+
+This method triggers the following events:
+
+<ResponseField name="inboxMessageAction">
+  Dispatched with the updated message and action (`"opened"` or `"unopened"`)
+</ResponseField>
+
+<ResponseField name="messageInboxUpdated">
+  Dispatched with the complete updated list of inbox messages
+</ResponseField>
+
+## Example Usage
+
+```javascript
+// Mark a message as opened
+try {
+  await Gist.updateInboxMessageOpenState('queue_123', true);
+  console.log('Message marked as opened');
+} catch (error) {
+  console.error('Failed to update message:', error);
+}
+```
+
+```javascript
+// Mark a message as unopened
+await Gist.updateInboxMessageOpenState('queue_123', false);
+```
+
+```javascript
+// Update message state when user clicks on it
+const handleMessageClick = async (message) => {
+  if (!message.opened) {
+    await Gist.updateInboxMessageOpenState(message.queueId, true);
+    
+    // Update unopened count
+    const count = await Gist.getInboxUnopenedCount();
+    updateNotificationBadge(count);
+  }
+  
+  // Display the message content
+  displayMessage(message);
+};
+```
+
+```javascript
+// Listen for inbox message actions
+Gist.events.on('inboxMessageAction', ({ message, action }) => {
+  console.log(`Message ${message.messageId} was ${action}`);
+});
+```
+
+## Error Handling
+
+This method throws an error if:
+- The API request fails (non-2xx response)
+- No user token is set
+- The queue ID is not found
+
+```javascript
+try {
+  await Gist.updateInboxMessageOpenState('queue_123', true);
+} catch (error) {
+  if (error.message.includes('Failed to mark inbox message')) {
+    // Handle API error
+    console.error('Server error:', error);
+  }
+}
+```
+
+## Notes
+
+- Updates are persisted both locally and remotely
+- Local storage is updated with a 60-minute TTL
+- The `messageInboxUpdated` event is dispatched after successful update
+- Changes are reflected immediately in `getInboxMessages()` results
+
+## Related Methods
+
+- [getInboxMessages](/api/get-inbox-messages) - Get all inbox messages
+- [getInboxUnopenedCount](/api/get-inbox-unopened-count) - Get count of unopened messages
+- [removeInboxMessage](/api/remove-inbox-message) - Remove a message from inbox

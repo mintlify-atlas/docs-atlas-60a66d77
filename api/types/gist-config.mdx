@@ -1,0 +1,66 @@
+---
+title: "GistConfig"
+description: "Configuration object for initializing the Gist SDK"
+---
+
+## Interface
+
+```typescript
+interface GistConfig {
+  siteId: string;
+  dataCenter: string;
+  env?: GistEnv;
+  logging?: boolean;
+  experiments?: boolean;
+  useAnonymousSession?: boolean;
+  isPreviewSession?: boolean;
+}
+
+type GistEnv = "prod" | "dev" | "local";
+```
+
+## Properties
+
+<ResponseField name="siteId" type="string" required>
+  Your Gist site identifier. This is required to connect your application to your Gist workspace.
+</ResponseField>
+
+<ResponseField name="dataCenter" type="string" required>
+  The data center region for your Gist workspace (e.g., "US" or "EU").
+</ResponseField>
+
+<ResponseField name="env" type="GistEnv">
+  The environment to use for the SDK. Can be `"prod"`, `"dev"`, or `"local"`. Defaults to `"prod"`.
+</ResponseField>
+
+<ResponseField name="logging" type="boolean">
+  Enable debug logging to the console. Useful for development and troubleshooting. Defaults to `false`.
+</ResponseField>
+
+<ResponseField name="experiments" type="boolean">
+  Enable experimental features. Defaults to `false`.
+</ResponseField>
+
+<ResponseField name="useAnonymousSession" type="boolean">
+  Use anonymous sessions instead of user-specific sessions. Defaults to `false`.
+</ResponseField>
+
+<ResponseField name="isPreviewSession" type="boolean">
+  Mark this session as a preview session for testing purposes. Defaults to `false`.
+</ResponseField>
+
+## Example
+
+```typescript
+import Gist from "@getgist/web";
+
+const config: GistConfig = {
+  siteId: "your-site-id",
+  dataCenter: "US",
+  env: "prod",
+  logging: true,
+  useAnonymousSession: false
+};
+
+Gist.init(config);
+```

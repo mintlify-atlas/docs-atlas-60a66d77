@@ -1,0 +1,154 @@
+---
+title: Displaying Messages
+description: Learn how to display and dismiss in-app messages as overlays
+---
+
+The Gist Web SDK provides methods to display in-app messages as modal overlays on your website. This guide covers how to show and dismiss messages programmatically.
+
+## Showing Messages
+
+Use the `showMessage()` method to display a message as a modal overlay. This method takes a message object and returns the instance ID of the displayed message.
+
+```javascript
+const instanceId = await _cio.showMessage({
+  messageId: 'your-message-id',
+  properties: {
+    // Optional: custom properties to pass to the message
+    productName: 'Premium Plan',
+    discount: '20%'
+  }
+});
+
+console.log('Message displayed with instance ID:', instanceId);
+```
+
+### Message Parameters
+
+<ParamField path="messageId" type="string" required>
+  The unique identifier of the message to display
+</ParamField>
+
+<ParamField path="properties" type="object">
+  Optional properties to customize the message content. These properties can be referenced in your message template using Liquid syntax.
+</ParamField>
+
+### Behavior
+
+- Only one overlay message can be displayed at a time
+- If an overlay message is already showing, `showMessage()` will return `null`
+- Messages are displayed only when the document is visible (not in a hidden tab)
+- The SDK automatically logs message views and interactions
+
+## Dismissing Messages
+
+Use the `dismissMessage()` method to programmatically close a displayed message. You need to provide the instance ID returned by `showMessage()`.
+
+<Steps>
+  <Step title="Store the instance ID">
+    When showing a message, save the returned instance ID:
+    
+    ```javascript
+    const instanceId = await _cio.showMessage({
+      messageId: 'welcome-message'
+    });
+    ```
+  </Step>
+  
+  <Step title="Dismiss the message">
+    Call `dismissMessage()` with the instance ID:
+    
+    ```javascript
+    await _cio.dismissMessage(instanceId);
+    ```
+  </Step>
+</Steps>
+
+### What Happens When Dismissing
+
+When you dismiss a message:
+
+1. The message overlay is removed from the DOM
+2. A `messageDismissed` event is dispatched
+3. For persistent messages, the dismissal is logged
+4. For broadcast messages, the dismissal state is saved locally
+5. The message queue is checked for the next message to display
+
+## Complete Example
+
+Here's a complete example showing how to display a message and dismiss it after a timeout:
+
+```javascript
+// Display a promotional message
+const instanceId = await _cio.showMessage({
+  messageId: 'spring-sale-2024',
+  properties: {
+    discount: '30%',
+    endDate: 'March 31, 2024'
+  }
+});
+
+if (instanceId) {
+  console.log('Spring sale message displayed');
+  
+  // Automatically dismiss after 10 seconds
+  setTimeout(async () => {
+    await _cio.dismissMessage(instanceId);
+    console.log('Message dismissed');
+  }, 10000);
+} else {
+  console.log('Message could not be displayed');
+}
+```
+
+## Conditional Display
+
+You can conditionally show messages based on user actions or app state:
+
+```javascript
+// Show onboarding message for new users
+if (user.isNew) {
+  const instanceId = await _cio.showMessage({
+    messageId: 'onboarding-welcome',
+    properties: {
+      userName: user.name
+    }
+  });
+}
+
+// Show upgrade message when user reaches limit
+if (user.storageUsed > user.storageLimit * 0.9) {
+  await _cio.showMessage({
+    messageId: 'upgrade-prompt',
+    properties: {
+      storageUsed: user.storageUsed,
+      storageLimit: user.storageLimit
+    }
+  });
+}
+```
+
+## Message Lifecycle Events
+
+Listen to message lifecycle events to track when messages are shown or dismissed:
+
+```javascript
+// Track when message is shown
+_cio.events.on('messageShown', (message) => {
+  console.log('Message shown:', message.messageId);
+  analytics.track('Message Shown', {
+    messageId: message.messageId
+  });
+});
+
+// Track when message is dismissed
+_cio.events.on('messageDismissed', (message) => {
+  console.log('Message dismissed:', message.messageId);
+  analytics.track('Message Dismissed', {
+    messageId: message.messageId
+  });
+});
+```
+
+<Card title="Next Steps" icon="arrow-right" href="/guides/event-handling">
+  Learn more about handling message events and user interactions
+</Card>

@@ -1,0 +1,73 @@
+---
+title: "getInboxMessages"
+description: "Retrieve all inbox messages for the current user"
+---
+
+Retrieves all inbox messages from local storage for the authenticated user. Messages are automatically filtered to exclude expired messages based on their expiry date.
+
+## Method Signature
+
+```javascript
+Gist.getInboxMessages()
+```
+
+## Returns
+
+<ResponseField name="Promise<InboxMessage[]>" type="array">
+  An array of inbox message objects
+  <Expandable title="InboxMessage">
+    <ResponseField name="messageId" type="string" required>
+      Unique identifier for the message
+    </ResponseField>
+    <ResponseField name="queueId" type="string">
+      Queue identifier for the message
+    </ResponseField>
+    <ResponseField name="opened" type="boolean">
+      Whether the message has been opened by the user
+    </ResponseField>
+    <ResponseField name="expiry" type="string">
+      ISO 8601 timestamp when the message expires
+    </ResponseField>
+    <ResponseField name="topics" type="string[]">
+      Array of topic tags associated with the message
+    </ResponseField>
+    <ResponseField name="properties" type="MessageProperties">
+      Additional message properties including custom data
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Example Usage
+
+```javascript
+// Get all inbox messages
+const messages = await Gist.getInboxMessages();
+
+console.log(`Total messages: ${messages.length}`);
+
+// Display unopened messages
+const unopened = messages.filter(msg => !msg.opened);
+console.log(`Unopened messages: ${unopened.length}`);
+
+// Access message properties
+messages.forEach(message => {
+  console.log({
+    id: message.messageId,
+    opened: message.opened,
+    topics: message.topics
+  });
+});
+```
+
+## Notes
+
+- Messages are cached in local storage with a TTL of 60 minutes
+- Expired messages are automatically filtered out based on the `expiry` field
+- Returns an empty array if no user token is set
+- This method does not make a network request; it reads from local storage
+
+## Related Methods
+
+- [getInboxUnopenedCount](/api/get-inbox-unopened-count) - Get count of unopened messages
+- [updateInboxMessageOpenState](/api/update-inbox-message-open-state) - Mark message as opened or unopened
+- [removeInboxMessage](/api/remove-inbox-message) - Remove a message from inbox

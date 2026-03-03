@@ -1,0 +1,86 @@
+---
+title: "InboxMessage"
+description: "Message object representing an inbox message"
+---
+
+## Interface
+
+```typescript
+interface InboxMessage {
+  messageId: string;
+  queueId?: string;
+  opened?: boolean;
+  expiry?: string;
+  topics?: string[];
+  properties?: MessageProperties;
+  [key: string]: unknown;
+}
+```
+
+## Properties
+
+<ResponseField name="messageId" type="string" required>
+  Unique identifier for the inbox message.
+</ResponseField>
+
+<ResponseField name="queueId" type="string">
+  Queue identifier for the message, used for tracking and updating the message state.
+</ResponseField>
+
+<ResponseField name="opened" type="boolean">
+  Whether the message has been opened by the user. Defaults to `false`.
+</ResponseField>
+
+<ResponseField name="expiry" type="string">
+  ISO 8601 timestamp indicating when the message expires. Messages past their expiry date are automatically filtered out.
+</ResponseField>
+
+<ResponseField name="topics" type="string[]">
+  Array of topic tags associated with this message. Used for filtering messages by topic.
+</ResponseField>
+
+<ResponseField name="properties" type="MessageProperties">
+  <Expandable title="MessageProperties">
+    <ResponseField name="gist" type="GistProperties">
+      Gist-specific properties for the message.
+    </ResponseField>
+    <ResponseField name="[key: string]" type="unknown">
+      Additional custom properties.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="[key: string]" type="unknown">
+  Additional dynamic properties that may be attached to the message.
+</ResponseField>
+
+## Example
+
+```typescript
+import Gist from "@getgist/web";
+
+// Get inbox messages
+const messages = await Gist.getInboxMessages();
+
+messages.forEach((message: InboxMessage) => {
+  console.log("Message ID:", message.messageId);
+  console.log("Opened:", message.opened);
+  console.log("Topics:", message.topics);
+});
+
+// Mark a message as opened
+if (message.queueId) {
+  await Gist.markInboxMessageOpened(message.queueId);
+}
+
+// Filter messages by topic
+const topicMessages = messages.filter((msg) => 
+  msg.topics?.includes("announcements")
+);
+
+// Check if message is expired
+const isExpired = (message: InboxMessage) => {
+  if (!message.expiry) return false;
+  return new Date(message.expiry) < new Date();
+};
+```
