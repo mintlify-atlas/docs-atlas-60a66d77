@@ -21,11 +21,11 @@ Custom attributes are:
 
 Use `setCustomAttribute()` to store a custom attribute:
 
-```javascript
-_cio.setCustomAttribute('plan', 'premium');
-_cio.setCustomAttribute('userName', 'John Doe');
-_cio.setCustomAttribute('accountAge', 365);
-_cio.setCustomAttribute('preferences', { theme: 'dark', notifications: true });
+```
+Gist.setCustomAttribute('plan', 'premium');
+Gist.setCustomAttribute('userName', 'John Doe');
+Gist.setCustomAttribute('accountAge', 365);
+Gist.setCustomAttribute('preferences', { theme: 'dark', notifications: true });
 ```
 
 ### Supported Data Types
@@ -39,25 +39,25 @@ You can store any JSON-serializable value:
 - Arrays: `['tag1', 'tag2']`
 - Null: `null`
 
-```javascript
+```
 // String
-_cio.setCustomAttribute('email', 'user@example.com');
+Gist.setCustomAttribute('email', 'user@example.com');
 
 // Number
-_cio.setCustomAttribute('loginCount', 15);
+Gist.setCustomAttribute('loginCount', 15);
 
 // Boolean
-_cio.setCustomAttribute('isPremium', true);
+Gist.setCustomAttribute('isPremium', true);
 
 // Object
-_cio.setCustomAttribute('settings', {
+Gist.setCustomAttribute('settings', {
   theme: 'dark',
   language: 'en',
   notifications: true
 });
 
 // Array
-_cio.setCustomAttribute('interests', ['technology', 'design', 'marketing']);
+Gist.setCustomAttribute('interests', ['technology', 'design', 'marketing']);
 ```
 
 ## Retrieving Attributes
@@ -74,14 +74,14 @@ While custom attributes are automatically included in message requests, you can 
 
 Remove a specific attribute by key:
 
-```javascript
-_cio.removeCustomAttribute('userName');
+```
+Gist.removeCustomAttribute('userName');
 ```
 
 The method returns `true` if the attribute existed and was removed, `false` otherwise:
 
-```javascript
-const wasRemoved = _cio.removeCustomAttribute('planType');
+```
+const wasRemoved = Gist.removeCustomAttribute('planType');
 if (wasRemoved) {
   console.log('Plan type attribute removed');
 } else {
@@ -93,8 +93,8 @@ if (wasRemoved) {
 
 Remove all custom attributes at once:
 
-```javascript
-_cio.clearCustomAttributes();
+```
+Gist.clearCustomAttributes();
 console.log('All custom attributes cleared');
 ```
 
@@ -111,9 +111,9 @@ Custom attributes are automatically passed to message templates and can be refer
 <Steps>
   <Step title="Set attributes in your app">
     ```javascript
-    _cio.setCustomAttribute('userName', 'Sarah');
-    _cio.setCustomAttribute('plan', 'premium');
-    _cio.setCustomAttribute('trialDaysLeft', 7);
+    Gist.setCustomAttribute('userName', 'Sarah');
+    Gist.setCustomAttribute('plan', 'premium');
+    Gist.setCustomAttribute('trialDaysLeft', 7);
     ```
   </Step>
   
@@ -129,7 +129,7 @@ Custom attributes are automatically passed to message templates and can be refer
   
   <Step title="Display the message">
     ```javascript
-    await _cio.showMessage({
+    await Gist.showMessage({
       messageId: 'trial-reminder'
     });
     ```
@@ -146,13 +146,13 @@ Custom attributes are automatically passed to message templates and can be refer
 
 Store user profile data for personalization:
 
-```javascript
+```
 function updateUserProfile(user) {
-  _cio.setCustomAttribute('userName', user.name);
-  _cio.setCustomAttribute('email', user.email);
-  _cio.setCustomAttribute('accountType', user.accountType);
-  _cio.setCustomAttribute('joinDate', user.joinDate);
-  _cio.setCustomAttribute('avatarUrl', user.avatarUrl);
+  Gist.setCustomAttribute('userName', user.name);
+  Gist.setCustomAttribute('email', user.email);
+  Gist.setCustomAttribute('accountType', user.accountType);
+  Gist.setCustomAttribute('joinDate', user.joinDate);
+  Gist.setCustomAttribute('avatarUrl', user.avatarUrl);
 }
 
 // When user logs in
@@ -161,12 +161,12 @@ updateUserProfile(currentUser);
 
 ### Subscription and Plan Information
 
-```javascript
+```
 function setSubscriptionInfo(subscription) {
-  _cio.setCustomAttribute('plan', subscription.plan);
-  _cio.setCustomAttribute('billingCycle', subscription.billingCycle);
-  _cio.setCustomAttribute('renewalDate', subscription.renewalDate);
-  _cio.setCustomAttribute('features', subscription.features);
+  Gist.setCustomAttribute('plan', subscription.plan);
+  Gist.setCustomAttribute('billingCycle', subscription.billingCycle);
+  Gist.setCustomAttribute('renewalDate', subscription.renewalDate);
+  Gist.setCustomAttribute('features', subscription.features);
 }
 
 setSubscriptionInfo({
@@ -181,12 +181,12 @@ setSubscriptionInfo({
 
 Track usage for targeted messaging:
 
-```javascript
+```
 function trackUsage() {
-  _cio.setCustomAttribute('projectCount', userProjects.length);
-  _cio.setCustomAttribute('storageUsed', calculateStorageUsed());
-  _cio.setCustomAttribute('lastActiveDate', new Date().toISOString());
-  _cio.setCustomAttribute('featureUsage', {
+  Gist.setCustomAttribute('projectCount', userProjects.length);
+  Gist.setCustomAttribute('storageUsed', calculateStorageUsed());
+  Gist.setCustomAttribute('lastActiveDate', new Date().toISOString());
+  Gist.setCustomAttribute('featureUsage', {
     export: 25,
     share: 10,
     collaborate: 5
@@ -199,12 +199,12 @@ setInterval(trackUsage, 60000); // Every minute
 
 ### Preferences and Settings
 
-```javascript
+```
 function saveUserPreferences(preferences) {
-  _cio.setCustomAttribute('language', preferences.language);
-  _cio.setCustomAttribute('timezone', preferences.timezone);
-  _cio.setCustomAttribute('emailNotifications', preferences.emailNotifications);
-  _cio.setCustomAttribute('theme', preferences.theme);
+  Gist.setCustomAttribute('language', preferences.language);
+  Gist.setCustomAttribute('timezone', preferences.timezone);
+  Gist.setCustomAttribute('emailNotifications', preferences.emailNotifications);
+  Gist.setCustomAttribute('theme', preferences.theme);
 }
 
 saveUserPreferences({
@@ -217,17 +217,17 @@ saveUserPreferences({
 
 ### A/B Testing Cohorts
 
-```javascript
+```
 // Assign user to test cohort
 const cohort = Math.random() < 0.5 ? 'control' : 'variant';
-_cio.setCustomAttribute('abTestCohort', cohort);
-_cio.setCustomAttribute('experimentId', 'checkout-flow-v2');
+Gist.setCustomAttribute('abTestCohort', cohort);
+Gist.setCustomAttribute('experimentId', 'checkout-flow-v2');
 
 // Show different messages based on cohort
 if (cohort === 'variant') {
-  await _cio.showMessage({ messageId: 'new-checkout-flow' });
+  await Gist.showMessage({ messageId: 'new-checkout-flow' });
 } else {
-  await _cio.showMessage({ messageId: 'standard-checkout' });
+  await Gist.showMessage({ messageId: 'standard-checkout' });
 }
 ```
 
@@ -235,34 +235,34 @@ if (cohort === 'variant') {
 
 Update attributes dynamically based on user behavior:
 
-```javascript
+```
 // Track page views
 let pageViews = 0;
 function trackPageView() {
   pageViews++;
-  _cio.setCustomAttribute('pageViewCount', pageViews);
+  Gist.setCustomAttribute('pageViewCount', pageViews);
   
   // Show onboarding message after 3 page views
   if (pageViews === 3) {
-    _cio.showMessage({ messageId: 'onboarding-tour' });
+    Gist.showMessage({ messageId: 'onboarding-tour' });
   }
 }
 
 // Track feature adoption
 function trackFeatureUse(featureName) {
-  const featureUsage = _cio.getCustomAttribute('featureUsage') || {};
+  const featureUsage = Gist.getCustomAttribute('featureUsage') || {};
   featureUsage[featureName] = (featureUsage[featureName] || 0) + 1;
-  _cio.setCustomAttribute('featureUsage', featureUsage);
+  Gist.setCustomAttribute('featureUsage', featureUsage);
 }
 
 // Track engagement score
 function calculateEngagementScore() {
   const score = calculateScore(); // Your scoring logic
-  _cio.setCustomAttribute('engagementScore', score);
+  Gist.setCustomAttribute('engagementScore', score);
   
   // Show upgrade prompt for highly engaged users
   if (score > 80) {
-    _cio.showMessage({ messageId: 'power-user-upgrade' });
+    Gist.showMessage({ messageId: 'power-user-upgrade' });
   }
 }
 ```
@@ -271,13 +271,13 @@ function calculateEngagementScore() {
 
 Custom attributes work alongside message properties for maximum flexibility:
 
-```javascript
+```
 // Set persistent attributes
-_cio.setCustomAttribute('userName', 'Alice');
-_cio.setCustomAttribute('plan', 'free');
+Gist.setCustomAttribute('userName', 'Alice');
+Gist.setCustomAttribute('plan', 'free');
 
 // Show message with additional context-specific properties
-await _cio.showMessage({
+await Gist.showMessage({
   messageId: 'upgrade-prompt',
   properties: {
     // These are specific to this message instance
@@ -295,31 +295,31 @@ await _cio.showMessage({
 
 ### On User Login
 
-```javascript
+```
 function handleUserLogin(user) {
   // Clear any previous user's attributes
-  _cio.clearCustomAttributes();
+  Gist.clearCustomAttributes();
   
   // Set user token for authenticated session
-  _cio.setUserToken(user.id);
+  Gist.setUserToken(user.id);
   
   // Set new user's attributes
-  _cio.setCustomAttribute('userName', user.name);
-  _cio.setCustomAttribute('email', user.email);
-  _cio.setCustomAttribute('plan', user.subscription.plan);
-  _cio.setCustomAttribute('loginCount', user.loginCount);
+  Gist.setCustomAttribute('userName', user.name);
+  Gist.setCustomAttribute('email', user.email);
+  Gist.setCustomAttribute('plan', user.subscription.plan);
+  Gist.setCustomAttribute('loginCount', user.loginCount);
 }
 ```
 
 ### On User Logout
 
-```javascript
+```
 function handleUserLogout() {
   // Clear custom attributes
-  _cio.clearCustomAttributes();
+  Gist.clearCustomAttributes();
   
   // Clear user token
-  _cio.clearUserToken();
+  Gist.clearUserToken();
   
   console.log('User session cleared');
 }
@@ -334,9 +334,9 @@ Custom attributes are stored in browser local storage:
 - **Size**: Limited by browser local storage quota (typically 5-10MB)
 - **Serialization**: Automatically handled by the SDK
 
-```javascript
+```
 // Attributes persist across page reloads
-_cio.setCustomAttribute('theme', 'dark');
+Gist.setCustomAttribute('theme', 'dark');
 
 // After page reload, the attribute is still available
 // and will be included in message requests
@@ -346,21 +346,21 @@ _cio.setCustomAttribute('theme', 'dark');
 
 The SDK validates attribute keys:
 
-```javascript
+```
 // Valid keys
-_cio.setCustomAttribute('userName', 'John'); // Returns true
-_cio.setCustomAttribute('plan_type', 'premium'); // Returns true
+Gist.setCustomAttribute('userName', 'John'); // Returns true
+Gist.setCustomAttribute('plan_type', 'premium'); // Returns true
 
 // Invalid keys
-_cio.setCustomAttribute('', 'value'); // Returns false, logs error
-_cio.setCustomAttribute(null, 'value'); // Returns false, logs error
-_cio.setCustomAttribute(123, 'value'); // Returns false, logs error
+Gist.setCustomAttribute('', 'value'); // Returns false, logs error
+Gist.setCustomAttribute(null, 'value'); // Returns false, logs error
+Gist.setCustomAttribute(123, 'value'); // Returns false, logs error
 ```
 
 Always check return values when setting attributes:
 
-```javascript
-const success = _cio.setCustomAttribute('userPlan', plan);
+```
+const success = Gist.setCustomAttribute('userPlan', plan);
 if (!success) {
   console.error('Failed to set custom attribute');
   // Handle the error appropriately
@@ -375,12 +375,12 @@ if (!success) {
     
     ```javascript
     // Good: camelCase
-    _cio.setCustomAttribute('userName', 'John');
-    _cio.setCustomAttribute('accountType', 'premium');
+    Gist.setCustomAttribute('userName', 'John');
+    Gist.setCustomAttribute('accountType', 'premium');
     
     // Also good: snake_case
-    _cio.setCustomAttribute('user_name', 'John');
-    _cio.setCustomAttribute('account_type', 'premium');
+    Gist.setCustomAttribute('user_name', 'John');
+    Gist.setCustomAttribute('account_type', 'premium');
     ```
   </Accordion>
   
@@ -389,13 +389,13 @@ if (!success) {
     
     ```javascript
     // ❌ Don't do this
-    _cio.setCustomAttribute('creditCard', '4111-1111-1111-1111');
-    _cio.setCustomAttribute('password', 'user-password');
-    _cio.setCustomAttribute('ssn', '123-45-6789');
+    Gist.setCustomAttribute('creditCard', '4111-1111-1111-1111');
+    Gist.setCustomAttribute('password', 'user-password');
+    Gist.setCustomAttribute('ssn', '123-45-6789');
     
     // ✅ Do this instead
-    _cio.setCustomAttribute('hasPaymentMethod', true);
-    _cio.setCustomAttribute('lastFourDigits', '1111');
+    Gist.setCustomAttribute('hasPaymentMethod', true);
+    Gist.setCustomAttribute('lastFourDigits', '1111');
     ```
   </Accordion>
   
@@ -404,7 +404,7 @@ if (!success) {
     
     ```javascript
     // Update on significant changes
-    _cio.setCustomAttribute('plan', newPlan); // Update immediately
+    Gist.setCustomAttribute('plan', newPlan); // Update immediately
     
     // Batch less critical updates
     let metrics = {};
@@ -412,7 +412,7 @@ if (!success) {
       metrics.pageViews++;
       // Save every 5 page views or on page unload
       if (metrics.pageViews % 5 === 0) {
-        _cio.setCustomAttribute('pageViews', metrics.pageViews);
+        Gist.setCustomAttribute('pageViews', metrics.pageViews);
       }
     }
     ```
@@ -423,8 +423,8 @@ if (!success) {
     
     ```javascript
     function logout() {
-      _cio.clearCustomAttributes();
-      _cio.clearUserToken();
+      Gist.clearCustomAttributes();
+      Gist.clearUserToken();
       // Additional logout logic
     }
     ```

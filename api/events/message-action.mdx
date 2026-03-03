@@ -76,7 +76,7 @@ Gist.events.on('messageAction', (payload) => {
   console.log('Element:', payload.name);
   console.log('Message:', payload.message);
 });
-```
+```javascript
 
 ## Example
 
@@ -105,7 +105,7 @@ Gist.events.on('messageAction', (payload) => {
     window.open('/docs', '_blank');
   }
 });
-```
+```javascript
 
 ## Advanced Usage
 
@@ -148,7 +148,7 @@ function handleNavigation(message, linkName) {
   console.log(`Navigation triggered: ${linkName}`);
   // Track navigation event
 }
-```
+```javascript
 
 ## Filter by Message or Action
 
@@ -172,7 +172,7 @@ Gist.events.on('messageAction', ({ message, action, name }) => {
     });
   }
 });
-```
+```javascript
 
 ## Remove Event Listener
 
@@ -191,4 +191,4 @@ Gist.events.off('messageAction', actionHandler);
 
 // Remove all listeners for this event
 Gist.events.off('messageAction');
-```
+```javascript

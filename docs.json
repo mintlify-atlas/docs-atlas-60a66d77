@@ -110,7 +110,8 @@
               "api/events/message-dismissed",
               "api/events/message-error",
               "api/events/message-action",
-              "api/events/inbox-updated"
+              "api/events/inbox-updated",
+              "api/events/inbox-message-action"
             ]
           },
           {

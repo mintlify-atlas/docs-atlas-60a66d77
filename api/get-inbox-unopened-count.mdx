@@ -9,7 +9,7 @@ Returns the number of inbox messages that have not been opened by the current us
 
 ```javascript
 Gist.getInboxUnopenedCount()
-```
+```javascript
 
 ## Returns
 
@@ -33,7 +33,7 @@ if (count > 0) {
 } else {
   badge.style.display = 'none';
 }
-```
+```javascript
 
 ```javascript
 // Listen for inbox updates to refresh the count
@@ -41,7 +41,7 @@ Gist.events.on('messageInboxUpdated', async () => {
   const count = await Gist.getInboxUnopenedCount();
   updateNotificationBadge(count);
 });
-```
+```javascript
 
 ## Notes
 

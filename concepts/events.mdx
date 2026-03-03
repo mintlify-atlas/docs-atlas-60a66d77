@@ -23,7 +23,7 @@ await Gist.setup({
 Gist.events.on('messageShown', (message) => {
   console.log('Message shown:', message);
 });
-```
+```javascript
 
 Source: `src/gist.js:59`, `src/utilities/event-emitter.ts:3-40`
 
@@ -37,13 +37,13 @@ Register an event listener:
 
 ```typescript
 Gist.events.on(eventName: string, callback: (event: any) => void): void
-```
+```javascript
 
 ```javascript
 Gist.events.on('messageShown', (message) => {
   // Handle event
 });
-```
+```javascript
 
 You can register multiple listeners for the same event. They will be called in the order they were registered.
 
@@ -53,7 +53,7 @@ Unregister an event listener:
 
 ```typescript
 Gist.events.off(eventName: string, callback?: (event: any) => void): void
-```
+```javascript
 
 ```javascript
 const handler = (message) => {
@@ -67,7 +67,7 @@ Gist.events.off('messageShown', handler);
 
 // Or remove all listeners for an event
 Gist.events.off('messageShown');
-```
+```javascript
 
 ### dispatch()
 
@@ -75,7 +75,7 @@ Dispatch an event (used internally by the SDK):
 
 ```typescript
 Gist.events.dispatch(eventName: string, event: any): void
-```
+```javascript
 
 <Warning>
 The `dispatch()` method is used internally by the SDK. You typically don't need to call it from your application code.
@@ -97,7 +97,7 @@ Gist.events.on('messageShown', (message) => {
   console.log('Instance ID:', message.instanceId);
   console.log('Queue ID:', message.queueId);
 });
-```
+```javascript
 
 **Event payload**: `GistMessage` object
 
@@ -119,7 +119,7 @@ Gist.events.on('messageDismissed', (message) => {
   // Check the queue for the next message
   // (SDK does this automatically)
 });
-```
+```javascript
 
 **Event payload**: `GistMessage` object
 
@@ -141,7 +141,7 @@ Gist.events.on('messageError', (message) => {
   // Log to your error tracking service
   // Provide fallback experience
 });
-```
+```javascript
 
 **Event payload**: `GistMessage` object
 
@@ -169,7 +169,7 @@ Gist.events.on('messageAction', ({ message, action, name }) => {
     buttonName: name
   });
 });
-```
+```javascript
 
 **Event payload**: Object with three properties:
 - `message`: The `GistMessage` object
@@ -197,7 +197,7 @@ Gist.events.on('eventDispatched', ({ name, payload }) => {
     saveSurveyResponse(payload);
   }
 });
-```
+```javascript
 
 **Event payload**: Object with two properties:
 - `name`: The event name (string)
@@ -222,7 +222,7 @@ Gist.events.on('messageShown', (message) => {
     messageId: message.messageId
   });
 });
-```
+```javascript
 
 ### Multiple Event Listeners
 
@@ -240,7 +240,7 @@ Gist.events.on('messageDismissed', (message) => {
 Gist.events.on('messageError', (message) => {
   console.error('Error:', message.messageId);
 });
-```
+```javascript
 
 ### Lifecycle Tracking
 
@@ -275,7 +275,7 @@ Gist.events.on('messageDismissed', (message) => {
     messageLifecycles.delete(message.instanceId);
   }
 });
-```
+```javascript
 
 ### Conditional Event Handling
 
@@ -296,7 +296,7 @@ Gist.events.on('messageShown', (message) => {
     startOnboardingAnalytics();
   }
 });
-```
+```javascript
 
 ### Error Handling with Fallbacks
 
@@ -315,7 +315,7 @@ Gist.events.on('messageError', (message) => {
     timestamp: new Date()
   });
 });
-```
+```javascript
 
 ## Analytics Integration
 
@@ -337,7 +337,7 @@ Gist.events.on('messageAction', ({ message, action, name }) => {
     button_name: name
   });
 });
-```
+```javascript
 
 ### Google Analytics
 
@@ -356,7 +356,7 @@ Gist.events.on('messageAction', ({ message, action, name }) => {
     button_name: name
   });
 });
-```
+```javascript
 
 ### Mixpanel
 
@@ -368,7 +368,7 @@ Gist.events.on('messageShown', (message) => {
     'Is Overlay': message.overlay
   });
 });
-```
+```javascript
 
 ## Cleanup and Memory Management
 
@@ -395,7 +395,7 @@ function MyComponent() {
   
   return <div>My Component</div>;
 }
-```
+```javascript
 
 ```javascript
 // In vanilla JavaScript
@@ -427,7 +427,7 @@ class MessageTracker {
     // Handle event
   }
 }
-```
+```javascript
 
 ## Best Practices
 
@@ -464,7 +464,7 @@ await Gist.setup({
 // "Message shown: msg_abc123"
 // "Message dismissed: msg_abc123"
 // "Message action: /dashboard, https://example.com with name Learn More on instance-123"
-```
+```javascript
 
 You can also create a debug listener that logs all events:
 
@@ -476,7 +476,7 @@ events.forEach(eventName => {
     console.log(`[Gist Event] ${eventName}:`, data);
   });
 });
-```
+```javascript
 
 ## Next Steps
 

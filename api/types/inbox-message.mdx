@@ -15,7 +15,7 @@ interface InboxMessage {
   properties?: MessageProperties;
   [key: string]: unknown;
 }
-```
+```javascript
 
 ## Properties
 
@@ -83,4 +83,4 @@ const isExpired = (message: InboxMessage) => {
   if (!message.expiry) return false;
   return new Date(message.expiry) < new Date();
 };
-```
+```javascript

@@ -9,8 +9,8 @@ The Gist Web SDK provides methods to display in-app messages as modal overlays o
 
 Use the `showMessage()` method to display a message as a modal overlay. This method takes a message object and returns the instance ID of the displayed message.
 
-```javascript
-const instanceId = await _cio.showMessage({
+```
+const instanceId = await Gist.showMessage({
   messageId: 'your-message-id',
   properties: {
     // Optional: custom properties to pass to the message
@@ -48,7 +48,7 @@ Use the `dismissMessage()` method to programmatically close a displayed message.
     When showing a message, save the returned instance ID:
     
     ```javascript
-    const instanceId = await _cio.showMessage({
+    const instanceId = await Gist.showMessage({
       messageId: 'welcome-message'
     });
     ```
@@ -58,7 +58,7 @@ Use the `dismissMessage()` method to programmatically close a displayed message.
     Call `dismissMessage()` with the instance ID:
     
     ```javascript
-    await _cio.dismissMessage(instanceId);
+    await Gist.dismissMessage(instanceId);
     ```
   </Step>
 </Steps>
@@ -77,9 +77,9 @@ When you dismiss a message:
 
 Here's a complete example showing how to display a message and dismiss it after a timeout:
 
-```javascript
+```
 // Display a promotional message
-const instanceId = await _cio.showMessage({
+const instanceId = await Gist.showMessage({
   messageId: 'spring-sale-2024',
   properties: {
     discount: '30%',
@@ -92,7 +92,7 @@ if (instanceId) {
   
   // Automatically dismiss after 10 seconds
   setTimeout(async () => {
-    await _cio.dismissMessage(instanceId);
+    await Gist.dismissMessage(instanceId);
     console.log('Message dismissed');
   }, 10000);
 } else {
@@ -104,10 +104,10 @@ if (instanceId) {
 
 You can conditionally show messages based on user actions or app state:
 
-```javascript
+```
 // Show onboarding message for new users
 if (user.isNew) {
-  const instanceId = await _cio.showMessage({
+  const instanceId = await Gist.showMessage({
     messageId: 'onboarding-welcome',
     properties: {
       userName: user.name
@@ -117,7 +117,7 @@ if (user.isNew) {
 
 // Show upgrade message when user reaches limit
 if (user.storageUsed > user.storageLimit * 0.9) {
-  await _cio.showMessage({
+  await Gist.showMessage({
     messageId: 'upgrade-prompt',
     properties: {
       storageUsed: user.storageUsed,
@@ -131,9 +131,9 @@ if (user.storageUsed > user.storageLimit * 0.9) {
 
 Listen to message lifecycle events to track when messages are shown or dismissed:
 
-```javascript
+```
 // Track when message is shown
-_cio.events.on('messageShown', (message) => {
+Gist.events.on('messageShown', (message) => {
   console.log('Message shown:', message.messageId);
   analytics.track('Message Shown', {
     messageId: message.messageId
@@ -141,7 +141,7 @@ _cio.events.on('messageShown', (message) => {
 });
 
 // Track when message is dismissed
-_cio.events.on('messageDismissed', (message) => {
+Gist.events.on('messageDismissed', (message) => {
   console.log('Message dismissed:', message.messageId);
   analytics.track('Message Dismissed', {
     messageId: message.messageId

@@ -7,7 +7,7 @@ description: 'Dismiss a currently displayed message'
 
 ```javascript
 Gist.dismissMessage(instanceId: string): Promise<void>
-```
+```javascript
 
 Dismisses a currently displayed message by its instance ID. This removes the message from view and cleans up its state.
 
@@ -37,7 +37,7 @@ const instanceId = await Gist.showMessage({
 if (instanceId) {
   await Gist.dismissMessage(instanceId);
 }
-```
+```javascript
 
 ```javascript
 // Dismiss a message after a timeout
@@ -51,7 +51,7 @@ if (instanceId) {
     await Gist.dismissMessage(instanceId);
   }, 10000);
 }
-```
+```javascript
 
 ## Example from Source
 
@@ -63,7 +63,7 @@ static async dismissMessage(instanceId) {
   await logBroadcastDismissedLocally(message);
   await checkMessageQueue();
 }
-```
+```javascript
 
 ## Notes
 

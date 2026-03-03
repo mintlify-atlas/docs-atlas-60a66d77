@@ -7,7 +7,7 @@ description: 'Set the current route for message targeting'
 
 ```javascript
 Gist.setCurrentRoute(route: string): Promise<void>
-```
+```javascript
 
 Sets the current route/path of your application. This is used to determine which messages should be displayed based on route rules configured in Customer.io.
 
@@ -44,7 +44,7 @@ function App() {
   
   // ...
 }
-```
+```javascript
 
 ## Example from Source
 
@@ -55,7 +55,7 @@ static async setCurrentRoute(route) {
   await checkCurrentMessagesAfterRouteChange();
   await checkMessageQueue();
 }
-```
+```javascript
 
 ## Notes
 

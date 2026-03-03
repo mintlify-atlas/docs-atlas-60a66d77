@@ -1,0 +1,153 @@
+---
+title: inboxMessageAction
+description: Event triggered when an inbox message is marked as opened or unopened
+---
+
+## Event Name
+
+`inboxMessageAction`
+
+## Description
+
+The `inboxMessageAction` event is triggered when an inbox message's open state changes via the `updateInboxMessageOpenState()` method. This event provides details about which message was affected and the action performed.
+
+## When It's Triggered
+
+This event fires when:
+- A message is marked as opened with `Gist.updateInboxMessageOpenState(queueId, true)`
+- A message is marked as unopened with `Gist.updateInboxMessageOpenState(queueId, false)`
+
+<Note>
+  This event fires after the state change is successfully persisted, allowing you to update your UI or track analytics.
+</Note>
+
+## Event Payload
+
+<ResponseField name="message" type="InboxMessage">
+  The inbox message that was updated
+
+  <Expandable title="InboxMessage properties">
+    <ResponseField name="messageId" type="string">
+      Unique identifier for the message
+    </ResponseField>
+
+    <ResponseField name="queueId" type="string">
+      Queue identifier used to reference the message
+    </ResponseField>
+
+    <ResponseField name="opened" type="boolean">
+      Whether the message has been opened
+    </ResponseField>
+
+    <ResponseField name="expiry" type="string">
+      ISO 8601 timestamp when the message expires
+    </ResponseField>
+
+    <ResponseField name="topics" type="string[]">
+      Array of topic tags for filtering messages
+    </ResponseField>
+
+    <ResponseField name="properties" type="MessageProperties">
+      Additional message properties and metadata
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="action" type="string">
+  The action performed: `"opened"` or `"unopened"`
+</ResponseField>
+
+## Usage
+
+### Basic Event Listener
+
+```javascript
+Gist.events.on('inboxMessageAction', (event) => {
+  console.log('Inbox message action:', event.action);
+  console.log('Message ID:', event.message.messageId);
+  console.log('Queue ID:', event.message.queueId);
+  console.log('Is opened:', event.message.opened);
+});
+```javascript
+
+### Track Read Status
+
+```javascript
+Gist.events.on('inboxMessageAction', (event) => {
+  if (event.action === 'opened') {
+    // Track when a message is read
+    analytics.track('Inbox Message Read', {
+      messageId: event.message.messageId,
+      queueId: event.message.queueId,
+      topics: event.message.topics
+    });
+  }
+});
+```javascript
+
+### Update UI on State Change
+
+```javascript
+Gist.events.on('inboxMessageAction', (event) => {
+  const messageElement = document.querySelector(`[data-queue-id="${event.message.queueId}"]`);
+  
+  if (messageElement) {
+    if (event.action === 'opened') {
+      messageElement.classList.remove('unread');
+      messageElement.classList.add('read');
+    } else {
+      messageElement.classList.remove('read');
+      messageElement.classList.add('unread');
+    }
+  }
+});
+```javascript
+
+### Mark Message as Read on Click
+
+```javascript
+async function handleMessageClick(queueId) {
+  // Update the state
+  await Gist.updateInboxMessageOpenState(queueId, true);
+  
+  // The inboxMessageAction event will fire automatically
+  // You can handle UI updates in the event listener
+}
+
+// Listen for the event
+Gist.events.on('inboxMessageAction', (event) => {
+  if (event.action === 'opened') {
+    console.log(`Message ${event.message.messageId} marked as read`);
+  }
+});
+```javascript
+
+## Removing Event Listeners
+
+To remove an event listener, use `Gist.events.off()`:
+
+### Remove Specific Handler
+
+```javascript
+const actionHandler = (event) => {
+  console.log('Action:', event.action);
+};
+
+Gist.events.on('inboxMessageAction', actionHandler);
+
+// Later, remove the specific handler
+Gist.events.off('inboxMessageAction', actionHandler);
+```javascript
+
+### Remove All Handlers
+
+```javascript
+// Remove all handlers for this event
+Gist.events.off('inboxMessageAction');
+```javascript
+
+## Related Methods
+
+- [updateInboxMessageOpenState](/api/update-inbox-message-open-state) - Mark a message as opened or unopened
+- [getInboxMessages](/api/get-inbox-messages) - Get all inbox messages
+- [messageInboxUpdated](/api/events/inbox-updated) - Event fired when the inbox message list changes

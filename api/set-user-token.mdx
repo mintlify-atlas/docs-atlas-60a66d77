@@ -7,7 +7,7 @@ description: 'Identify a user to receive personalized messages'
 
 ```javascript
 Gist.setUserToken(userToken: string, expiryDate?: Date): Promise<void>
-```
+```javascript
 
 Sets the user token to identify the current user. This allows the SDK to fetch and display personalized messages for the identified user.
 
@@ -40,7 +40,7 @@ const expiryDate = new Date();
 expiryDate.setDate(expiryDate.getDate() + 30);
 
 await Gist.setUserToken('user-123', expiryDate);
-```
+```javascript
 
 ## Example from Source
 
@@ -52,7 +52,7 @@ static async setUserToken(userToken, expiryDate) {
   stopSSEListener(true);
   await startQueueListener();
 }
-```
+```javascript
 
 ## Notes
 

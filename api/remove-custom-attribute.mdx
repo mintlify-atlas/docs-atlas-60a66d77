@@ -9,7 +9,7 @@ Removes a specific custom attribute that was previously set. The attribute is de
 
 ```javascript
 Gist.removeCustomAttribute(key)
-```
+```javascript
 
 ## Parameters
 
@@ -29,13 +29,13 @@ Gist.removeCustomAttribute(key)
 // Remove a single attribute
 const removed = Gist.removeCustomAttribute('plan');
 console.log(removed); // true if attribute existed, false otherwise
-```
+```javascript
 
 ```javascript
 // Set and then remove an attribute
 Gist.setCustomAttribute('tempData', 'temporary value');
 Gist.removeCustomAttribute('tempData');
-```
+```javascript
 
 ```javascript
 // Remove user preference
@@ -49,7 +49,7 @@ const clearUserPreference = (preferenceKey) => {
 };
 
 clearUserPreference('theme');
-```
+```javascript
 
 ```javascript
 // Conditionally remove attributes
@@ -61,7 +61,7 @@ const cleanupUserData = () => {
     console.log(`${key}: ${removed ? 'removed' : 'not found'}`);
   });
 };
-```
+```javascript
 
 ## Validation
 
@@ -81,7 +81,7 @@ console.log(result3); // false
 Gist.setCustomAttribute('temp', 'value');
 const result4 = Gist.removeCustomAttribute('temp');
 console.log(result4); // true
-```
+```javascript
 
 ## Notes
 
@@ -99,13 +99,13 @@ console.log(result4); // true
 // Clear session-specific attributes
 Gist.removeCustomAttribute('sessionId');
 Gist.removeCustomAttribute('temporaryToken');
-```
+```javascript
 
 **Clean Up After Feature Flag**
 ```javascript
 // Remove beta feature flag after general release
 Gist.removeCustomAttribute('betaAccess');
-```
+```javascript
 
 **User Privacy**
 ```javascript
@@ -115,7 +115,7 @@ const removeSensitiveData = () => {
   Gist.removeCustomAttribute('address');
   console.log('Sensitive data removed');
 };
-```
+```javascript
 
 **Reset User Preferences**
 ```javascript
@@ -125,7 +125,7 @@ const resetThemePreference = () => {
     console.log('Theme preference reset to default');
   }
 };
-```
+```javascript
 
 ## Related Methods
 

@@ -59,7 +59,7 @@ Use the `Gist.events.on()` method to listen for this event:
 Gist.events.on('messageInboxUpdated', (messages) => {
   console.log('Inbox updated:', messages);
 });
-```
+```javascript
 
 ## Example
 
@@ -99,7 +99,7 @@ function renderInboxMessages(messages) {
     </div>
   `).join('');
 }
-```
+```javascript
 
 ## Track Unopened Count
 
@@ -126,7 +126,7 @@ Gist.events.on('messageInboxUpdated', async (messages) => {
 // Initialize on page load
 const initialCount = await Gist.getInboxUnopenedCount();
 console.log(`Initial unopened count: ${initialCount}`);
-```
+```javascript
 
 ## Filter by Topics
 
@@ -159,7 +159,7 @@ function updateTopicSection(topic, messages, unopenedCount) {
     // Update message list for this topic
   }
 }
-```
+```javascript
 
 ## Managing Inbox Messages
 
@@ -195,7 +195,7 @@ async function loadInbox() {
   console.log('Current inbox:', messages);
   // This doesn't trigger the event, use it for initial load
 }
-```
+```javascript
 
 ## Remove Event Listener
 
@@ -214,4 +214,4 @@ Gist.events.off('messageInboxUpdated', inboxHandler);
 
 // Remove all listeners for this event
 Gist.events.off('messageInboxUpdated');
-```
+```javascript

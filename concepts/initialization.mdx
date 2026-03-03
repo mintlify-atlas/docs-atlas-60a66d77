@@ -18,7 +18,7 @@ await Gist.setup({
   siteId: 'your-site-id',
   dataCenter: 'US'
 });
-```
+```javascript
 
 <Note>
 The `setup()` method is asynchronous and returns a Promise. Always use `await` or `.then()` to ensure initialization completes before calling other SDK methods.
@@ -37,7 +37,7 @@ interface GistConfig {
   experiments?: boolean;       // Optional: Enable experimental features (defaults to false)
   useAnonymousSession?: boolean;  // Optional: Enable anonymous sessions (defaults to false)
 }
-```
+```javascript
 
 ### Environment Configuration
 
@@ -53,7 +53,7 @@ await Gist.setup({
   dataCenter: 'US',
   env: 'dev'
 });
-```
+```javascript
 
 ### Logging
 
@@ -65,7 +65,7 @@ await Gist.setup({
   dataCenter: 'US',
   logging: true
 });
-```
+```javascript
 
 <Tip>
 Enable logging during development to troubleshoot message delivery, routing rules, and user identification.
@@ -81,7 +81,7 @@ await Gist.setup({
   dataCenter: 'US',
   useAnonymousSession: true
 });
-```
+```javascript
 
 See [User Identification](/concepts/user-identification) for more details on anonymous sessions.
 
@@ -95,7 +95,7 @@ await Gist.setup({ siteId: 'abc', dataCenter: 'US' });
 
 // Second call is ignored
 await Gist.setup({ siteId: 'xyz', dataCenter: 'EU' }); // Logs: "Gist SDK already initialized, skipping setup."
-```
+```javascript
 
 <Warning>
 You cannot change the configuration after initialization. The SDK must be reloaded to use different settings.

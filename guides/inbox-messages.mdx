@@ -22,8 +22,8 @@ Inbox messages are special messages that:
 
 Retrieve all inbox messages for the current user:
 
-```javascript
-const messages = await _cio.getInboxMessages();
+```
+const messages = await Gist.getInboxMessages();
 
 console.log(`Total messages: ${messages.length}`);
 messages.forEach(message => {
@@ -37,8 +37,8 @@ messages.forEach(message => {
 
 Quickly get the count of unread messages:
 
-```javascript
-const unopenedCount = await _cio.getInboxUnopenedCount();
+```
+const unopenedCount = await Gist.getInboxUnopenedCount();
 
 console.log(`Unread messages: ${unopenedCount}`);
 
@@ -67,9 +67,9 @@ Each inbox message has the following structure:
 
 Update a message's opened state when the user reads it:
 
-```javascript
+```
 try {
-  await _cio.updateInboxMessageOpenState(queueId, true);
+  await Gist.updateInboxMessageOpenState(queueId, true);
   console.log('Message marked as read');
 } catch (error) {
   console.error('Failed to update message state:', error);
@@ -80,8 +80,8 @@ try {
 
 You can also mark a message as unread:
 
-```javascript
-await _cio.updateInboxMessageOpenState(queueId, false);
+```
+await Gist.updateInboxMessageOpenState(queueId, false);
 ```
 
 ### Complete Example: Inbox UI
@@ -92,7 +92,7 @@ Here's how to build a simple inbox interface:
   <Step title="Display inbox messages">
     ```javascript
     async function displayInbox() {
-      const messages = await _cio.getInboxMessages();
+      const messages = await Gist.getInboxMessages();
       const inboxContainer = document.getElementById('inbox');
       
       inboxContainer.innerHTML = messages.map(message => `
@@ -112,7 +112,7 @@ Here's how to build a simple inbox interface:
     ```javascript
     async function markAsRead(queueId) {
       try {
-        await _cio.updateInboxMessageOpenState(queueId, true);
+        await Gist.updateInboxMessageOpenState(queueId, true);
         // Refresh the inbox display
         await displayInbox();
         // Update badge count
@@ -127,7 +127,7 @@ Here's how to build a simple inbox interface:
   <Step title="Update badge count">
     ```javascript
     async function updateBadge() {
-      const count = await _cio.getInboxUnopenedCount();
+      const count = await Gist.getInboxUnopenedCount();
       const badge = document.getElementById('inbox-badge');
       
       if (count > 0) {
@@ -145,10 +145,10 @@ Here's how to build a simple inbox interface:
 
 Remove a message from the inbox when the user dismisses it:
 
-```javascript
+```
 async function removeMessage(queueId) {
   try {
-    await _cio.removeInboxMessage(queueId);
+    await Gist.removeInboxMessage(queueId);
     console.log('Message removed from inbox');
     
     // Refresh inbox display
@@ -173,8 +173,8 @@ When you remove an inbox message:
 
 Inbox messages can be organized by topics. To filter messages by topic, you'll need to filter the results:
 
-```javascript
-const messages = await _cio.getInboxMessages();
+```
+const messages = await Gist.getInboxMessages();
 
 // Filter by specific topic
 const promoMessages = messages.filter(message => 
@@ -198,8 +198,8 @@ const defaultMessages = messages.filter(message =>
 
 Listen for when the inbox is updated:
 
-```javascript
-_cio.events.on('messageInboxUpdated', (messages) => {
+```
+Gist.events.on('messageInboxUpdated', (messages) => {
   console.log('Inbox updated:', messages);
   
   // Update your UI
@@ -212,8 +212,8 @@ _cio.events.on('messageInboxUpdated', (messages) => {
 
 Listen for when a specific inbox message is opened or unopened:
 
-```javascript
-_cio.events.on('inboxMessageAction', (event) => {
+```
+Gist.events.on('inboxMessageAction', (event) => {
   console.log('Message action:', event.action); // 'opened' or 'unopened'
   console.log('Message:', event.message);
   
@@ -230,8 +230,8 @@ _cio.events.on('inboxMessageAction', (event) => {
 
 Inbox messages automatically respect expiry dates:
 
-```javascript
-const messages = await _cio.getInboxMessages();
+```
+const messages = await Gist.getInboxMessages();
 
 // Only non-expired messages are returned
 messages.forEach(message => {
@@ -246,7 +246,7 @@ messages.forEach(message => {
 
 Here's a complete example of an inbox implementation:
 
-```javascript
+```
 class InboxManager {
   constructor() {
     this.init();
@@ -254,8 +254,8 @@ class InboxManager {
   
   async init() {
     // Set up event listeners
-    _cio.events.on('messageInboxUpdated', () => this.refresh());
-    _cio.events.on('inboxMessageAction', (event) => {
+    Gist.events.on('messageInboxUpdated', () => this.refresh());
+    Gist.events.on('inboxMessageAction', (event) => {
       console.log(`Message ${event.action}:`, event.message.messageId);
     });
     
@@ -269,7 +269,7 @@ class InboxManager {
   }
   
   async displayMessages() {
-    const messages = await _cio.getInboxMessages();
+    const messages = await Gist.getInboxMessages();
     const container = document.getElementById('inbox-list');
     
     if (messages.length === 0) {
@@ -306,15 +306,15 @@ class InboxManager {
   
   async openMessage(queueId, messageId) {
     // Mark as read
-    await _cio.updateInboxMessageOpenState(queueId, true);
+    await Gist.updateInboxMessageOpenState(queueId, true);
     
     // Display the full message
-    await _cio.showMessage({ messageId });
+    await Gist.showMessage({ messageId });
   }
   
   async removeMessage(queueId) {
     try {
-      await _cio.removeInboxMessage(queueId);
+      await Gist.removeInboxMessage(queueId);
       console.log('Message removed');
     } catch (error) {
       console.error('Failed to remove message:', error);
@@ -322,7 +322,7 @@ class InboxManager {
   }
   
   async updateBadge() {
-    const count = await _cio.getInboxUnopenedCount();
+    const count = await Gist.getInboxUnopenedCount();
     const badge = document.getElementById('inbox-badge');
     
     badge.textContent = count;
@@ -346,7 +346,7 @@ const inboxManager = new InboxManager();
     
     ```javascript
     try {
-      await _cio.updateInboxMessageOpenState(queueId, true);
+      await Gist.updateInboxMessageOpenState(queueId, true);
     } catch (error) {
       // Show error message to user
       showNotification('Failed to update message');

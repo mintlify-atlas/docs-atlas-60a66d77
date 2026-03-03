@@ -94,7 +94,7 @@ Use the `Gist.events.on()` method to listen for this event:
 Gist.events.on('messageShown', (message) => {
   console.log('Message shown:', message);
 });
-```
+```javascript
 
 ## Example
 
@@ -120,7 +120,7 @@ await Gist.showMessage({
     modalPosition: 'center'
   }
 });
-```
+```javascript
 
 ## Remove Event Listener
 
@@ -139,4 +139,4 @@ Gist.events.off('messageShown', handler);
 
 // Remove all listeners for this event
 Gist.events.off('messageShown');
-```
+```javascript

@@ -25,7 +25,7 @@ By default, the SDK uses `localStorage` to persist sessions. In preview mode, it
 function getStorage(): Storage {
   return isSessionBeingPersisted() ? localStorage : sessionStorage;
 }
-```
+```javascript
 
 ## Stored Data
 
@@ -64,7 +64,7 @@ interface StoredItem {
   value: unknown;
   expiry: Date | string;
 }
-```
+```javascript
 
 Example stored data:
 
@@ -73,7 +73,7 @@ Example stored data:
   "value": "en-US",
   "expiry": "2027-03-03T00:00:00.000Z"
 }
-```
+```javascript
 
 ## Storage Operations
 
@@ -98,7 +98,7 @@ export function setKeyToLocalStore(
   };
   getStorage().setItem(key, JSON.stringify(item));
 }
-```
+```javascript
 
 ### Getting Values
 
@@ -108,7 +108,7 @@ Retrieval automatically checks expiry and removes expired items:
 export function getKeyFromLocalStore(key: string): unknown | null {
   return checkKeyForExpiry(key);
 }
-```
+```javascript
 
 ### Removing Values
 
@@ -116,7 +116,7 @@ export function getKeyFromLocalStore(key: string): unknown | null {
 export function clearKeyFromLocalStore(key: string): void {
   getStorage().removeItem(key);
 }
-```
+```javascript
 
 ## Automatic Cleanup
 
@@ -131,7 +131,7 @@ export function clearExpiredFromLocalStore(): void {
     checkKeyForExpiry(storage.key(i));
   }
 }
-```
+```javascript
 
 ### Expiry Rules
 
@@ -173,7 +173,7 @@ export function isSessionBeingPersisted(): boolean {
   }
   return currentValue === 'true';
 }
-```
+```javascript
 
 When preview mode is enabled:
 
@@ -182,7 +182,7 @@ if (cioPreviewId) {
   shouldPersistSession(false); // Switch to sessionStorage
   Gist.setUserToken(cioPreviewId);
 }
-```
+```javascript
 
 ## Managing Storage
 
@@ -199,7 +199,7 @@ for (let i = 0; i < localStorage.length; i++) {
     console.log(key, JSON.parse(value));
   }
 }
-```
+```javascript
 
 ### Clear All Gist Data
 
@@ -219,7 +219,7 @@ for (let key in sessionStorage) {
     sessionStorage.removeItem(key);
   }
 }
-```
+```javascript
 
 ### Monitor Storage Usage
 
@@ -248,7 +248,7 @@ function getGistStorageSize() {
 }
 
 getGistStorageSize();
-```
+```javascript
 
 ## Storage Limits
 
@@ -267,7 +267,7 @@ try {
 } catch (e) {
   log(`Error setting key ${key}: ${e}`);
 }
-```
+```javascript
 
 If you encounter quota errors:
 
@@ -302,7 +302,7 @@ for (let key in localStorage) {
     localStorage.removeItem(key);
   }
 }
-```
+```javascript
 
 ### Incognito/Private Browsing
 

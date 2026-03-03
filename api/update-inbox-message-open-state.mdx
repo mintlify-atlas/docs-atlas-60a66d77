@@ -9,7 +9,7 @@ Updates the open state of an inbox message. This marks the message as read or un
 
 ```javascript
 Gist.updateInboxMessageOpenState(queueId, opened)
-```
+```javascript
 
 ## Parameters
 
@@ -49,12 +49,12 @@ try {
 } catch (error) {
   console.error('Failed to update message:', error);
 }
-```
+```javascript
 
 ```javascript
 // Mark a message as unopened
 await Gist.updateInboxMessageOpenState('queue_123', false);
-```
+```javascript
 
 ```javascript
 // Update message state when user clicks on it
@@ -70,14 +70,14 @@ const handleMessageClick = async (message) => {
   // Display the message content
   displayMessage(message);
 };
-```
+```javascript
 
 ```javascript
 // Listen for inbox message actions
 Gist.events.on('inboxMessageAction', ({ message, action }) => {
   console.log(`Message ${message.messageId} was ${action}`);
 });
-```
+```javascript
 
 ## Error Handling
 
@@ -95,7 +95,7 @@ try {
     console.error('Server error:', error);
   }
 }
-```
+```javascript
 
 ## Notes
 

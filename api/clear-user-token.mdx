@@ -7,7 +7,7 @@ description: 'Clear the current user identification'
 
 ```javascript
 Gist.clearUserToken(): Promise<void>
-```
+```javascript
 
 Clears the current user token, removing user identification. If anonymous sessions are enabled, a guest session will be created automatically.
 
@@ -40,7 +40,7 @@ async function handleLogout() {
   // Redirect to login page
   window.location.href = '/login';
 }
-```
+```javascript
 
 ## Example from Source
 
@@ -54,7 +54,7 @@ static async clearUserToken() {
   stopSSEListener(true);
   await startQueueListener();
 }
-```
+```javascript
 
 ## Notes
 

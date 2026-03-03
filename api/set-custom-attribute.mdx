@@ -9,7 +9,7 @@ Sets a custom attribute for the user. Custom attributes are stored locally and c
 
 ```javascript
 Gist.setCustomAttribute(key, value)
-```
+```javascript
 
 ## Parameters
 
@@ -33,17 +33,17 @@ Gist.setCustomAttribute(key, value)
 // Set a string attribute
 const success = Gist.setCustomAttribute('plan', 'premium');
 console.log(success); // true
-```
+```javascript
 
 ```javascript
 // Set a number attribute
 Gist.setCustomAttribute('loginCount', 42);
-```
+```javascript
 
 ```javascript
 // Set a boolean attribute
 Gist.setCustomAttribute('isVerified', true);
-```
+```javascript
 
 ```javascript
 // Set an object attribute
@@ -52,12 +52,12 @@ Gist.setCustomAttribute('preferences', {
   theme: 'dark',
   language: 'en'
 });
-```
+```javascript
 
 ```javascript
 // Set an array attribute
 Gist.setCustomAttribute('interests', ['technology', 'design', 'music']);
-```
+```javascript
 
 ```javascript
 // Update user profile attributes
@@ -67,13 +67,13 @@ const updateUserProfile = (profile) => {
   Gist.setCustomAttribute('email', profile.email);
   Gist.setCustomAttribute('accountType', profile.accountType);
 };
-```
+```javascript
 
 ```javascript
 // Track user behavior
 Gist.setCustomAttribute('lastVisitedPage', window.location.pathname);
 Gist.setCustomAttribute('lastActiveDate', new Date().toISOString());
-```
+```javascript
 
 ## Validation
 
@@ -88,7 +88,7 @@ console.log(result2); // false
 // Valid key - returns true
 const result3 = Gist.setCustomAttribute('validKey', 'value');
 console.log(result3); // true
-```
+```javascript
 
 ## Notes
 
@@ -105,19 +105,19 @@ console.log(result3); // true
 ```javascript
 Gist.setCustomAttribute('userSegment', 'enterprise');
 Gist.setCustomAttribute('accountAge', 'veteran');
-```
+```javascript
 
 **Feature Flags**
 ```javascript
 Gist.setCustomAttribute('betaFeatures', true);
 Gist.setCustomAttribute('enabledFeatures', ['feature1', 'feature2']);
-```
+```javascript
 
 **Behavioral Tracking**
 ```javascript
 Gist.setCustomAttribute('pageViews', 150);
 Gist.setCustomAttribute('lastPurchaseDate', '2026-03-01');
-```
+```javascript
 
 ## Related Methods
 

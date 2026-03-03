@@ -30,7 +30,7 @@ Embedded messages are rendered inside a specific HTML element on your page. Unli
     Use `embedMessage()` to render the message in the container:
     
     ```javascript
-    const instanceId = await _cio.embedMessage(
+    const instanceId = await Gist.embedMessage(
       {
         messageId: 'your-message-id',
         properties: {
@@ -46,7 +46,7 @@ Embedded messages are rendered inside a specific HTML element on your page. Unli
 
 ### Method Signature
 
-```javascript
+```
 embedMessage(message, elementId)
 ```
 
@@ -76,9 +76,9 @@ Display a persistent announcement at the top of your page:
 </header>
 ```
 
-```javascript
+```
 // Embed announcement message
-await _cio.embedMessage(
+await Gist.embedMessage(
   {
     messageId: 'new-feature-announcement',
     properties: {
@@ -103,8 +103,8 @@ Add contextual help content in a sidebar:
 </div>
 ```
 
-```javascript
-await _cio.embedMessage(
+```
+await Gist.embedMessage(
   {
     messageId: 'contextual-help',
     properties: {
@@ -129,8 +129,8 @@ Embed promotional content within your page flow:
 </div>
 ```
 
-```javascript
-await _cio.embedMessage(
+```
+await Gist.embedMessage(
   {
     messageId: 'spring-sale-promo',
     properties: {
@@ -146,19 +146,19 @@ await _cio.embedMessage(
 
 The SDK supports special position identifiers for common placements. When using these, the SDK automatically creates the container element:
 
-```javascript
+```
 // These positions are automatically managed by the SDK
-await _cio.embedMessage(
+await Gist.embedMessage(
   { messageId: 'footer-message' },
   'top'     // Top of the page
 );
 
-await _cio.embedMessage(
+await Gist.embedMessage(
   { messageId: 'footer-message' },
   'bottom'  // Bottom of the page
 );
 
-await _cio.embedMessage(
+await Gist.embedMessage(
   { messageId: 'footer-message' },
   'center'  // Center of the page
 );
@@ -168,13 +168,13 @@ await _cio.embedMessage(
 
 You can embed messages dynamically based on user interactions or page state:
 
-```javascript
+```
 // Embed help message when user clicks help button
 document.getElementById('help-btn').addEventListener('click', async () => {
   const helpContainer = document.getElementById('help-container');
   
   if (helpContainer.innerHTML === '') {
-    await _cio.embedMessage(
+    await Gist.embedMessage(
       {
         messageId: 'inline-help',
         properties: {
@@ -191,21 +191,21 @@ document.getElementById('help-btn').addEventListener('click', async () => {
 
 You can embed multiple messages on the same page in different containers:
 
-```javascript
+```
 // Top banner
-await _cio.embedMessage(
+await Gist.embedMessage(
   { messageId: 'announcement' },
   'top-banner'
 );
 
 // Sidebar widget
-await _cio.embedMessage(
+await Gist.embedMessage(
   { messageId: 'tips' },
   'sidebar-tips'
 );
 
 // Footer promotion
-await _cio.embedMessage(
+await Gist.embedMessage(
   { messageId: 'newsletter' },
   'footer-newsletter'
 );
@@ -235,8 +235,8 @@ The SDK automatically handles height based on your container:
 
 ## Error Handling
 
-```javascript
-const instanceId = await _cio.embedMessage(
+```
+const instanceId = await Gist.embedMessage(
   { messageId: 'my-message' },
   'container-id'
 );
@@ -256,15 +256,15 @@ if (instanceId) {
 
 Embedded messages are automatically removed when dismissed by the user. To programmatically remove an embedded message:
 
-```javascript
-const instanceId = await _cio.embedMessage(
+```
+const instanceId = await Gist.embedMessage(
   { messageId: 'temporary-message' },
   'temp-container'
 );
 
 // Remove after 5 seconds
 setTimeout(async () => {
-  await _cio.dismissMessage(instanceId);
+  await Gist.dismissMessage(instanceId);
 }, 5000);
 ```
 

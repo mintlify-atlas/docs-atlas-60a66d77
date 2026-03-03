@@ -65,7 +65,7 @@ Use the `Gist.events.on()` method to listen for this event:
 Gist.events.on('messageError', (message) => {
   console.error('Message error:', message);
 });
-```
+```javascript
 
 ## Example
 
@@ -99,7 +99,7 @@ Gist.events.on('messageError', (message) => {
 Gist.events.on('messageShown', (message) => {
   console.log('Message successfully shown:', message.messageId);
 });
-```
+```javascript
 
 ## Error Handling Best Practices
 
@@ -129,7 +129,7 @@ Gist.events.on('messageError', (message) => {
     }, 3000);
   }
 });
-```
+```javascript
 
 ## Remove Event Listener
 
@@ -148,4 +148,4 @@ Gist.events.off('messageError', errorHandler);
 
 // Remove all listeners for this event
 Gist.events.off('messageError');
-```
+```javascript

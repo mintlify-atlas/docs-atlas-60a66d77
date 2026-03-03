@@ -20,7 +20,7 @@ Overlay messages appear on top of your page content, typically as modals or full
 const instanceId = await Gist.showMessage({
   messageId: 'msg_abc123'
 });
-```
+```javascript
 
 Overlay messages:
 - Block interaction with the underlying page
@@ -40,12 +40,12 @@ const instanceId = Gist.embedMessage(
   { messageId: 'msg_abc123' },
   'banner-container'
 );
-```
+```javascript
 
 ```html
 <!-- Your page HTML -->
 <div id="banner-container"></div>
-```
+```javascript
 
 Embedded messages:
 - Render within the specified DOM element
@@ -70,7 +70,7 @@ const message = {
 };
 
 await Gist.showMessage(message);
-```
+```javascript
 
 Available positions are managed by the page component manager and can be referenced by name.
 
@@ -98,7 +98,7 @@ interface GistMessage {
   displaySettings?: DisplaySettings; // Message display configuration
   properties?: MessageProperties;    // Message properties from Customer.io
 }
-```
+```javascript
 
 Source: `src/types.ts:13-29`
 
@@ -116,7 +116,7 @@ interface DisplaySettings {
   overlayColor?: string;        // Overlay background color (rgba)
   dismissOutsideClick?: boolean; // Whether clicking outside dismisses
 }
-```
+```javascript
 
 Display settings can be updated at runtime:
 
@@ -126,7 +126,7 @@ const updated = Gist.updateMessageDisplaySettings(instanceId, {
   overlayColor: 'rgba(0, 0, 0, 0.8)',
   dismissOutsideClick: true
 });
-```
+```javascript
 
 Source: `src/types.ts:31-39`, `src/gist.js:164-172`
 
@@ -154,7 +154,7 @@ Source: `src/managers/queue-manager.ts:68-82, 100-153`
 message.renderStartTime = new Date().getTime();
 message.firstLoad = true;
 message.instanceId = uuidv4(); // Generate unique instance ID
-```
+```javascript
 
 The SDK:
 1. Generates a unique instance ID
@@ -172,7 +172,7 @@ Once the message renders:
 Gist.events.on('messageShown', (message) => {
   console.log('Message shown:', message.messageId);
 });
-```
+```javascript
 
 The SDK:
 1. Displays the message (overlay or embedded)
@@ -190,7 +190,7 @@ Users can interact with message content:
 Gist.events.on('messageAction', ({ message, action, name }) => {
   console.log('User clicked:', action);
 });
-```
+```javascript
 
 Actions can include:
 - **Custom actions**: Links and buttons defined in the message
@@ -209,7 +209,7 @@ await Gist.dismissMessage(instanceId);
 Gist.events.on('messageDismissed', (message) => {
   console.log('Message dismissed:', message.messageId);
 });
-```
+```javascript
 
 The SDK:
 1. Hides the message visually
@@ -233,7 +233,7 @@ const message = {
     }
   }
 };
-```
+```javascript
 
 Persistent messages:
 - Don't log views immediately (logged only when dismissed)
@@ -265,7 +265,7 @@ Gist.events.on('messageAction', ({ message, action }) => {
     // SDK automatically saves step state for persistent messages
   }
 });
-```
+```javascript
 
 When users navigate between steps:
 1. The SDK saves the current step name
@@ -283,7 +283,7 @@ When multiple messages are eligible, they're displayed in priority order:
 const orderedMessages = allMessages.sort(
   (a, b) => a.priority - b.priority
 );
-```
+```javascript
 
 Lower priority numbers are shown first. The SDK processes messages one at a time until it finds one that can be displayed.
 

@@ -75,7 +75,7 @@ Use the `Gist.events.on()` method to listen for this event:
 Gist.events.on('messageDismissed', (message) => {
   console.log('Message dismissed:', message);
 });
-```
+```javascript
 
 ## Example
 
@@ -102,7 +102,7 @@ const instanceId = await Gist.showMessage({
 
 // Later, dismiss the message
 await Gist.dismissMessage(instanceId);
-```
+```javascript
 
 ## Dismiss Message Programmatically
 
@@ -125,7 +125,7 @@ Gist.events.on('messageDismissed', (message) => {
 setTimeout(async () => {
   await Gist.dismissMessage(instanceId);
 }, 5000);
-```
+```javascript
 
 ## Remove Event Listener
 
@@ -144,4 +144,4 @@ Gist.events.off('messageDismissed', handler);
 
 // Remove all listeners for this event
 Gist.events.off('messageDismissed');
-```
+```javascript

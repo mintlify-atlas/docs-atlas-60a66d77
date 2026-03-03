@@ -9,7 +9,7 @@ Removes an inbox message from local storage and logs a view event to the Custome
 
 ```javascript
 Gist.removeInboxMessage(queueId)
-```
+```javascript
 
 ## Parameters
 
@@ -41,7 +41,7 @@ try {
 } catch (error) {
   console.error('Failed to remove message:', error);
 }
-```
+```javascript
 
 ```javascript
 // Remove message with UI feedback
@@ -64,7 +64,7 @@ const handleDeleteMessage = async (messageId) => {
     }
   }
 };
-```
+```javascript
 
 ```javascript
 // Listen for inbox updates after removal
@@ -72,7 +72,7 @@ Gist.events.on('messageInboxUpdated', (messages) => {
   console.log(`Inbox now has ${messages.length} messages`);
   renderInboxMessages(messages);
 });
-```
+```javascript
 
 ```javascript
 // Bulk remove messages
@@ -85,7 +85,7 @@ const removeMultipleMessages = async (queueIds) => {
     }
   }
 };
-```
+```javascript
 
 ## Error Handling
 
@@ -103,7 +103,7 @@ try {
     console.error('Server error:', error);
   }
 }
-```
+```javascript
 
 ## Notes
 

@@ -7,7 +7,7 @@ description: 'Display a message as an overlay'
 
 ```javascript
 Gist.showMessage(message: GistMessage): Promise<string | null>
-```
+```javascript
 
 Displays a message as an overlay on top of your application content. Only one overlay message can be shown at a time.
 
@@ -61,7 +61,7 @@ const instanceId2 = await Gist.showMessage({
     accountType: 'premium'
   }
 });
-```
+```javascript
 
 ## Example from Source
 
@@ -70,7 +70,7 @@ static async showMessage(message) {
   var messageResponse = await showMessage(message);
   return messageResponse ? messageResponse.instanceId : null;
 }
-```
+```javascript
 
 ## Notes
 

@@ -19,7 +19,7 @@ await Gist.setup({
   dataCenter: 'US',
   logging: true // Enable debug logging
 });
-```
+```text
 
 <Warning>
 Always disable logging in production environments. Logging can expose sensitive information and impact performance.
@@ -30,43 +30,43 @@ Always disable logging in production environments. Logging can expose sensitive 
 When logging is enabled, the SDK logs important events and state changes:
 
 ### Initialization
-```
+```text
 Gist: Setup complete on prod environment.
-```
+```text
 
 ### User Management
-```
+```text
 Gist: Set user token to "user_123"
 Gist: Cleared user token
-```
+```text
 
 ### Localization
-```
+```text
 Gist: Set user locate to "es-ES"
-```
+```text
 
 ### Preview Mode
-```
+```text
 Gist: Preview mode enabled with user token: preview_user_123
-```
+```text
 
 ### Message Events
-```
+```text
 Gist: Message shown: msg_abc123
 Gist: Message dismissed: msg_abc123
 Gist: Message error: msg_abc123
 Gist: Message action: /dashboard, click with name btn_signup on instance_xyz
-```
+```text
 
 ### Route Changes
-```
+```text
 Gist: Current route set to: /dashboard
-```
+```text
 
 ### Storage Events
-```
+```text
 Gist: Error checking key gist.web.userLocale for expiry: [error details]
-```
+```text
 
 ## Implementation Details
 
@@ -78,7 +78,7 @@ export function log(message: string): void {
     console.log(`Gist: ${message}`);
   }
 }
-```
+```text
 
 All log messages are prefixed with `Gist:` to make them easy to identify in your browser's console.
 
@@ -118,7 +118,7 @@ await Gist.setup({
 // - "Setup complete" message
 // - User token confirmation
 // - Message events
-```
+```text
 
 **Common causes:**
 - User token not set correctly
@@ -138,7 +138,7 @@ If you're in preview mode, session data is intentionally not persisted to `local
 if (Gist.config.isPreviewSession) {
   console.log('Preview mode active - session not persisted');
 }
-```
+```text
 
 **Verify localStorage:**
 
@@ -146,7 +146,7 @@ if (Gist.config.isPreviewSession) {
 // Check stored user token
 const userToken = localStorage.getItem('gist.web.userToken');
 console.log('Stored user token:', userToken);
-```
+```text
 
 ### Messages Showing in Wrong Language
 
@@ -160,7 +160,7 @@ Gist.setUserLocale('es-ES');
 // Check what's stored
 const locale = localStorage.getItem('gist.web.userLocale');
 console.log('Stored locale:', locale);
-```
+```text
 
 ### Storage Quota Exceeded
 
@@ -176,7 +176,7 @@ for (let key in localStorage) {
   }
 }
 console.log('Total Gist storage:', total, 'characters');
-```
+```text
 
 **Clear expired data:**
 
@@ -189,7 +189,7 @@ for (let key in localStorage) {
     localStorage.removeItem(key);
   }
 }
-```
+```text
 
 ## Development vs. Production
 
@@ -203,7 +203,7 @@ await Gist.setup({
   logging: true,
   experiments: true
 });
-```
+```text
 
 ### Production Configuration
 
@@ -215,7 +215,7 @@ await Gist.setup({
   // logging defaults to false
   // experiments defaults to false
 });
-```
+```text
 
 ### Environment-Based Configuration
 
@@ -229,7 +229,7 @@ await Gist.setup({
   logging: isDevelopment,
   experiments: isDevelopment
 });
-```
+```text
 
 ## Advanced Debugging
 
@@ -262,7 +262,7 @@ Gist.events.on('messageAction', ({ message, action, name }) => {
     actionName: name
   });
 });
-```
+```text
 
 ### Network Monitoring
 
@@ -293,7 +293,7 @@ Gist.events.on('messageShown', (message) => {
     console.log(`Message rendered in ${renderTime}ms`);
   }
 });
-```
+```text
 
 ### Memory Usage
 
@@ -309,7 +309,7 @@ if (performance.memory) {
   const sdkMemory = (after - before) / 1024 / 1024;
   console.log(`SDK memory usage: ${sdkMemory.toFixed(2)} MB`);
 }
-```
+```text
 
 ## Getting Help
 

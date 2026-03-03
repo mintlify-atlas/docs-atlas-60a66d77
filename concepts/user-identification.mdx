@@ -21,7 +21,7 @@ await Gist.setup({
 
 // Identify the user
 await Gist.setUserToken('user-123');
-```
+```javascript
 
 <Note>
 The `setUserToken()` method is asynchronous. The SDK will reconnect to the message queue with the new user identity.
@@ -36,7 +36,7 @@ const expiryDate = new Date();
 expiryDate.setDate(expiryDate.getDate() + 90); // 90 days from now
 
 await Gist.setUserToken('user-123', expiryDate);
-```
+```javascript
 
 Tokens are stored in local storage with the expiration date. The SDK automatically clears expired tokens on initialization.
 
@@ -46,7 +46,7 @@ When a user logs out, clear their token:
 
 ```javascript
 await Gist.clearUserToken();
-```
+```javascript
 
 If anonymous sessions are enabled, the SDK will automatically generate a new guest token after clearing the user token.
 
@@ -62,7 +62,7 @@ await Gist.setup({
   dataCenter: 'US',
   useAnonymousSession: true
 });
-```
+```javascript
 
 ### How Anonymous Sessions Work
 
@@ -82,7 +82,7 @@ await Gist.setUserToken('user-123');
 // User logs out
 await Gist.clearUserToken();
 // Returns to guest token: "550e8400-e29b-41d4-a716-446655440000"
-```
+```javascript
 
 Source: `src/managers/user-manager.ts:38-56`
 
@@ -110,7 +110,7 @@ const isGuest = isAnonymousUser(); // boolean
 
 // Get the current token (guest or identified)
 const token = getUserToken(); // string | null
-```
+```javascript
 
 Source: `src/managers/user-manager.ts:15-21, 58-60`
 
@@ -148,7 +148,7 @@ During preview mode (when testing messages in the Customer.io dashboard), user i
 // In preview mode, these calls do nothing
 await Gist.setUserToken('user-123'); // Ignored
 await Gist.clearUserToken(); // Ignored
-```
+```javascript
 
 Source: `src/gist.js:114, 137`
 

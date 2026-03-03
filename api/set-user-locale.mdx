@@ -9,7 +9,7 @@ Sets the user's locale preference, which determines the language used for in-app
 
 ```javascript
 Gist.setUserLocale(locale)
-```
+```javascript
 
 ## Parameters
 
@@ -28,12 +28,12 @@ Gist.setUserLocale(locale)
 ```javascript
 // Set locale to Spanish
 Gist.setUserLocale('es-ES');
-```
+```javascript
 
 ```javascript
 // Set locale to French
 Gist.setUserLocale('fr-FR');
-```
+```javascript
 
 ```javascript
 // Set locale based on user selection
@@ -43,13 +43,13 @@ languageSelector.addEventListener('change', (event) => {
   Gist.setUserLocale(selectedLocale);
   console.log(`Locale set to: ${selectedLocale}`);
 });
-```
+```javascript
 
 ```javascript
 // Set locale based on browser language
 const browserLocale = navigator.language;
 Gist.setUserLocale(browserLocale);
-```
+```javascript
 
 ## Common Locale Codes
 
@@ -85,7 +85,7 @@ Gist.setUserLocale('es-ES');
 
 // Or fall back to browser language if not set
 console.log(navigator.language); // e.g., "en-US"
-```
+```javascript
 
 ## Related Methods
 

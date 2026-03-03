@@ -20,9 +20,9 @@ The SDK automatically checks for a `cioPreviewId` URL parameter during initializ
 
 Preview mode is enabled automatically when the SDK detects the `cioPreviewId` parameter in the URL:
 
-```
+```javascript
 https://your-app.com?cioPreviewId=preview_user_123
-```
+```javascript
 
 No additional configuration is required. The SDK will:
 
@@ -36,7 +36,7 @@ await Gist.setup({
 });
 
 // If cioPreviewId is in URL, preview mode is now active
-```
+```javascript
 
 ## Implementation Details
 
@@ -57,7 +57,7 @@ function fetchPreviewId(): string | null {
   const params = new URLSearchParams(window.location.search);
   return params.get('cioPreviewId');
 }
-```
+```javascript
 
 ## Session Persistence
 
@@ -77,7 +77,7 @@ import Gist from '@customer.io/gist-web';
 if (Gist.config.isPreviewSession) {
   console.log('Running in preview mode');
 }
-```
+```javascript
 
 ## Use Cases
 
@@ -94,15 +94,15 @@ await Gist.setup({
   dataCenter: 'US',
   logging: true // Enable logging to see preview mode activation
 });
-```
+```javascript
 
 ### QA Testing
 
 Share preview URLs with your QA team to test specific message scenarios:
 
-```
+```javascript
 https://staging.your-app.com?cioPreviewId=qa_scenario_1
-```
+```javascript
 
 ## Limitations
 

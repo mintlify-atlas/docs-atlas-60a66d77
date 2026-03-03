@@ -23,7 +23,7 @@ interface GistMessage {
   displaySettings?: DisplaySettings;
   properties?: MessageProperties;
 }
-```
+```javascript
 
 ## Properties
 
@@ -126,4 +126,4 @@ Gist.events.on("message", (message: GistMessage) => {
   console.log("Display type:", message.displaySettings?.displayType);
   console.log("Position:", message.position);
 });
-```
+```javascript

@@ -9,7 +9,7 @@ Clears all custom attributes that were previously set for the user. This removes
 
 ```javascript
 Gist.clearCustomAttributes()
-```
+```javascript
 
 ## Parameters
 
@@ -27,7 +27,7 @@ This method takes no parameters.
 // Clear all custom attributes
 Gist.clearCustomAttributes();
 console.log('All custom attributes cleared');
-```
+```javascript
 
 ```javascript
 // Clear attributes on user logout
@@ -40,7 +40,7 @@ const handleUserLogout = () => {
   
   console.log('User data cleared');
 };
-```
+```javascript
 
 ```javascript
 // Reset user profile completely
@@ -52,7 +52,7 @@ const resetUserProfile = () => {
     console.log('User profile reset successfully');
   }
 };
-```
+```javascript
 
 ```javascript
 // Clear and reinitialize with new data
@@ -67,7 +67,7 @@ const switchUserProfile = (newProfile) => {
   
   console.log('Profile switched successfully');
 };
-```
+```javascript
 
 ## Notes
 
@@ -89,7 +89,7 @@ const logout = async () => {
   // Redirect to login page
   window.location.href = '/login';
 };
-```
+```javascript
 
 **Privacy Compliance**
 ```javascript
@@ -98,7 +98,7 @@ const deleteUserData = () => {
   Gist.clearCustomAttributes();
   console.log('User data deleted in compliance with privacy regulations');
 };
-```
+```javascript
 
 **User Session Reset**
 ```javascript
@@ -108,7 +108,7 @@ const handleSessionTimeout = () => {
   alert('Your session has expired. Please log in again.');
   redirectToLogin();
 };
-```
+```javascript
 
 **Testing and Development**
 ```javascript
@@ -117,7 +117,7 @@ const resetTestState = () => {
   Gist.clearCustomAttributes();
   console.log('Test state cleared');
 };
-```
+```javascript
 
 **Account Switching**
 ```javascript
@@ -132,7 +132,7 @@ const switchAccount = (newAccountId) => {
   // Initialize new account attributes
   initializeAccountAttributes(newAccountId);
 };
-```
+```javascript
 
 ## Alternative: Selective Removal
 
@@ -145,7 +145,7 @@ Gist.removeCustomAttribute('sessionId');
 
 // Instead of clearing everything
 // Gist.clearCustomAttributes();
-```
+```javascript
 
 ## Related Methods
 

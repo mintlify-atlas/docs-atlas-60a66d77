@@ -23,7 +23,7 @@ yarn add customerio-gist-web
 
 Import and initialize the SDK with your Customer.io configuration. This should happen early in your application lifecycle:
 
-```javascript
+```
 import Gist from 'customerio-gist-web';
 
 // Initialize with your Customer.io site ID
@@ -43,7 +43,7 @@ await Gist.setup({
 
 For logged-in users, set a user token to identify them:
 
-```javascript
+```
 // When user logs in
 await Gist.setUserToken('user-unique-id');
 
@@ -62,7 +62,7 @@ For anonymous users, the SDK automatically handles session management when `useA
 
 If you're building a single-page application (SPA), set the current route to enable route-based message targeting:
 
-```javascript
+```
 // Set initial route
 await Gist.setCurrentRoute('home');
 
@@ -151,7 +151,7 @@ Messages can be displayed automatically based on your Customer.io campaigns, or 
 
 Subscribe to SDK events to track message interactions and respond to user actions:
 
-```javascript
+```
 // Message shown event
 Gist.events.on('messageShown', (message) => {
   console.log(`Message shown: ${message.messageId}`);
@@ -299,7 +299,7 @@ The SDK provides inbox functionality for persistent messages:
 
 Set custom attributes on the current user for advanced targeting:
 
-```javascript
+```
 // Set a custom attribute
 Gist.setCustomAttribute('plan', 'premium');
 Gist.setCustomAttribute('signup_date', '2024-01-15');
@@ -315,7 +315,7 @@ Gist.clearCustomAttributes();
 
 Set the user's locale for localized message content:
 
-```javascript
+```
 Gist.setUserLocale('en-US');
 Gist.setUserLocale('es-ES');
 Gist.setUserLocale('fr-FR');

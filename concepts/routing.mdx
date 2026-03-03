@@ -16,7 +16,7 @@ import Gist from '@customerio/gist-web';
 
 // When the route changes in your app
 await Gist.setCurrentRoute('/dashboard');
-```
+```javascript
 
 <Note>
 The `setCurrentRoute()` method is asynchronous. It triggers immediate evaluation of message routing rules and checks the message queue.
@@ -55,7 +55,7 @@ const message = {
 // - /home
 // - /settings
 // - /account/dashboard
-```
+```javascript
 
 Source: `src/managers/queue-manager.ts:100-114`
 
@@ -71,7 +71,7 @@ Match only a specific page:
 routeRuleWeb: '^/pricing$'
 // Matches: /pricing
 // Does NOT match: /pricing/details or /products/pricing
-```
+```javascript
 
 ### Prefix Match
 
@@ -80,7 +80,7 @@ Match all routes starting with a pattern:
 ```javascript
 routeRuleWeb: '^/dashboard'
 // Matches: /dashboard, /dashboard/settings, /dashboard/users/123
-```
+```javascript
 
 ### Multiple Options
 
@@ -90,7 +90,7 @@ Match any of several routes:
 routeRuleWeb: '^/(pricing|plans)$'
 // Matches: /pricing OR /plans
 // Does NOT match: /pricing/details
-```
+```javascript
 
 ### Wildcard Matching
 
@@ -100,7 +100,7 @@ Match routes with variable segments:
 routeRuleWeb: '^/users/[^/]+/profile$'
 // Matches: /users/123/profile, /users/abc/profile
 // Does NOT match: /users/123/settings
-```
+```javascript
 
 ### Exclude Routes
 
@@ -109,7 +109,7 @@ Match everything except specific routes:
 ```javascript
 routeRuleWeb: '^(?!/(login|signup)).*$'
 // Matches: Any route EXCEPT /login or /signup
-```
+```javascript
 
 <Tip>
 Test your route rules with an online regex tester before deploying. Remember that route rules are case-sensitive.
@@ -135,7 +135,7 @@ await Gist.setCurrentRoute('/dashboard');
 await Gist.setCurrentRoute('/settings');
 // SDK hides /dashboard messages (if they're no longer in DOM)
 // SDK shows messages targeted to /settings
-```
+```javascript
 
 Source: `src/gist.js:105-110`, `src/managers/queue-manager.ts:84-97`
 
@@ -158,7 +158,7 @@ function App() {
 
   return <div>{/* Your app */}</div>;
 }
-```
+```javascript
 
 ### Vue Router
 
@@ -175,7 +175,7 @@ watch(
     Gist.setCurrentRoute(newPath);
   }
 );
-```
+```javascript
 
 ### Next.js
 
@@ -200,7 +200,7 @@ function MyApp({ Component, pageProps }) {
 
   return <Component {...pageProps} />;
 }
-```
+```javascript
 
 ### Angular
 
@@ -223,7 +223,7 @@ export class AppComponent {
       });
   }
 }
-```
+```javascript
 
 ## Configuring Routes in Customer.io
 
@@ -253,7 +253,7 @@ await Gist.setCurrentRoute('/dashboard');
 // Console: "Current route set to: /dashboard"
 // Console: "Verifying route /dashboard against rule: ^/dashboard"
 // Console: "Message shown: msg_abc123"
-```
+```javascript
 
 Source: `src/gist.js:107`, `src/managers/queue-manager.ts:108`
 
@@ -271,7 +271,7 @@ const message = {
   }
 };
 // This message can appear on any page
-```
+```javascript
 
 Use route-less messages for:
 - Global announcements
