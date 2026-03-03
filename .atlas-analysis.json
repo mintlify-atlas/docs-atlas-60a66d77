@@ -1,0 +1,150 @@
+{
+  "projectType": "sdk-library",
+  "projectName": "Gist Web SDK",
+  "projectDescription": "JavaScript SDK for delivering in-app messages and flows from Customer.io Gist",
+  "theme": "palm",
+  "primaryColor": "#5865F2",
+  "lightColor": "#7289DA",
+  "darkColor": "#404EED",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "installation",
+              "quickstart"
+            ]
+          },
+          {
+            "group": "Core Concepts",
+            "pages": [
+              "concepts/initialization",
+              "concepts/user-identification",
+              "concepts/messages",
+              "concepts/routing",
+              "concepts/events"
+            ]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "guides/displaying-messages",
+              "guides/embedding-messages",
+              "guides/inbox-messages",
+              "guides/custom-attributes",
+              "guides/anonymous-sessions",
+              "guides/event-handling"
+            ]
+          },
+          {
+            "group": "Advanced",
+            "pages": [
+              "advanced/preview-mode",
+              "advanced/localization",
+              "advanced/debugging",
+              "advanced/local-storage"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Core Methods",
+            "pages": [
+              "api/setup",
+              "api/set-current-route",
+              "api/set-user-token",
+              "api/clear-user-token"
+            ]
+          },
+          {
+            "group": "Messages",
+            "pages": [
+              "api/show-message",
+              "api/embed-message",
+              "api/dismiss-message",
+              "api/update-message-display-settings"
+            ]
+          },
+          {
+            "group": "Inbox",
+            "pages": [
+              "api/get-inbox-messages",
+              "api/get-inbox-unopened-count",
+              "api/update-inbox-message-open-state",
+              "api/remove-inbox-message"
+            ]
+          },
+          {
+            "group": "User Management",
+            "pages": [
+              "api/set-user-locale",
+              "api/set-custom-attribute",
+              "api/remove-custom-attribute",
+              "api/clear-custom-attributes"
+            ]
+          },
+          {
+            "group": "Events",
+            "pages": [
+              "api/events/message-shown",
+              "api/events/message-dismissed",
+              "api/events/message-error",
+              "api/events/message-action",
+              "api/events/inbox-updated"
+            ]
+          },
+          {
+            "group": "Types",
+            "pages": [
+              "api/types/gist-config",
+              "api/types/gist-message",
+              "api/types/display-settings",
+              "api/types/inbox-message"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Display in-app messages with multiple positioning options",
+    "Embed messages inline or as floating elements",
+    "Inbox message management with read/unread states",
+    "User identification and anonymous sessions",
+    "Custom user attributes and localization",
+    "Route-based message targeting",
+    "Event-driven message lifecycle hooks",
+    "Local storage persistence for offline support"
+  ],
+  "publicApiSurface": [
+    "Gist.setup(config)",
+    "Gist.setCurrentRoute(route)",
+    "Gist.setUserToken(userToken, expiryDate)",
+    "Gist.clearUserToken()",
+    "Gist.setUserLocale(locale)",
+    "Gist.showMessage(message)",
+    "Gist.embedMessage(message, elementId)",
+    "Gist.dismissMessage(instanceId)",
+    "Gist.updateMessageDisplaySettings(instanceId, displaySettings)",
+    "Gist.getInboxMessages()",
+    "Gist.getInboxUnopenedCount()",
+    "Gist.updateInboxMessageOpenState(queueId, opened)",
+    "Gist.removeInboxMessage(queueId)",
+    "Gist.setCustomAttribute(key, value)",
+    "Gist.removeCustomAttribute(key)",
+    "Gist.clearCustomAttributes()",
+    "Gist.events.on(eventName, callback)",
+    "Event: messageShown",
+    "Event: messageDismissed",
+    "Event: messageError",
+    "Event: messageAction",
+    "Event: messageInboxUpdated"
+  ]
+}
